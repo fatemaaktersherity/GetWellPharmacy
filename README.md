@@ -1,6 +1,6 @@
 # GetWell Pharmacy
 
-A full-stack pharmacy management web application with an **ASP.NET** backend and an **Angular 19** frontend.
+A full-stack pharmacy POS software with an **ASP.NET** backend and an **Angular 19** frontend.
 
 ## Project Structure
 
