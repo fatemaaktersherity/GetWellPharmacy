@@ -1,0 +1,162 @@
+<div class="page-header">
+  <div>
+    <h1>SMS Log</h1>
+    <p>
+      Audit trail of SMS send attempts. Sending happens outside this app — these
+      are the recorded outcomes.
+    </p>
+  </div>
+</div>
+
+<mat-card>
+  <mat-card-content>
+    <form [formGroup]="filterForm" class="filter-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Phone number</mat-label>
+        <input
+          matInput
+          formControlName="phoneNumber"
+          placeholder="Exact match"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="isSuccess">
+          <mat-option [value]="null">All</mat-option>
+          <mat-option [value]="true">Delivered</mat-option>
+          <mat-option [value]="false">Failed</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>From</mat-label>
+        <input matInput type="date" formControlName="fromDate" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>To</mat-label>
+        <input matInput type="date" formControlName="toDate" />
+      </mat-form-field>
+
+      <button mat-stroked-button type="button" (click)="clearFilters()">
+        <mat-icon>clear</mat-icon> Clear
+      </button>
+    </form>
+
+    <div class="summary">
+      <span
+        ><strong>{{ logs.length }}</strong> shown</span
+      >
+      <span class="ok"
+        ><mat-icon>check_circle</mat-icon> {{ successCount }} delivered</span
+      >
+      <span class="fail"
+        ><mat-icon>error</mat-icon> {{ failureCount }} failed</span
+      >
+    </div>
+
+    <table mat-table [dataSource]="logs">
+      <ng-container matColumnDef="sentAt">
+        <th mat-header-cell *matHeaderCellDef>Sent</th>
+        <td mat-cell *matCellDef="let l">
+          {{ l.sentAt | date: "dd MMM yyyy, HH:mm" }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="phoneNumber">
+        <th mat-header-cell *matHeaderCellDef>Phone</th>
+        <td mat-cell *matCellDef="let l">{{ l.phoneNumber }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="message">
+        <th mat-header-cell *matHeaderCellDef>Message</th>
+        <td
+          mat-cell
+          *matCellDef="let l"
+          class="message-cell"
+          [matTooltip]="l.message"
+        >
+          {{ l.message }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let l">
+          @if (l.isSuccess) {
+            <span class="badge ok"
+              ><mat-icon>check_circle</mat-icon> Delivered</span
+            >
+          } @else {
+            <span class="badge fail"><mat-icon>error</mat-icon> Failed</span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="response">
+        <th mat-header-cell *matHeaderCellDef>Gateway response</th>
+        <td
+          mat-cell
+          *matCellDef="let l"
+          class="message-cell"
+          [matTooltip]="l.response || ''"
+        >
+          {{ l.response || "—" }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let l">
+          @if (auth.isAdmin()) {
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="deleteLog(l)"
+              matTooltip="Delete this entry"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="cols"></tr>
+      <tr mat-row *matRowDef="let row; columns: cols"></tr>
+    </table>
+
+    @if (!logs.length && !loading) {
+      <div class="empty">No SMS logs match these filters.</div>
+    }
+  </mat-card-content>
+</mat-card>
+
+@if (auth.isAdmin()) {
+  <mat-card class="purge-card">
+    <mat-card-header
+      ><mat-card-title>Retention</mat-card-title></mat-card-header
+    >
+    <mat-card-content>
+      <p class="purge-copy">
+        This table grows with every send and is never trimmed automatically.
+        Remove entries older than the retention period below.
+      </p>
+      <div class="purge-row">
+        <mat-form-field appearance="outline" class="purge-days">
+          <mat-label>Keep the last (days)</mat-label>
+          <input
+            matInput
+            type="number"
+            min="1"
+            [formControl]="purgeDaysControl"
+          />
+        </mat-form-field>
+        <button mat-flat-button color="warn" type="button" (click)="purge()">
+          <mat-icon>delete_sweep</mat-icon> Purge older logs
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+}

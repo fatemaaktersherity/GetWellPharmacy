@@ -1,0 +1,84 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-weight: 500;
+}
+
+.page-header p {
+  color: #666;
+  margin: 6px 0 0;
+}
+
+.form-card {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.image-picker { display: grid; gap: 8px; }
+.image-picker img { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+.packaging-section { border-top: 1px solid #e0e0e0; margin-top: 24px; padding-top: 16px; }
+.details-section {
+  border-top: 1px solid #e0e0e0;
+  margin-top: 24px;
+  padding-top: 16px;
+}
+.details-section .form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.details-section .details-wide {
+  grid-column: 1 / -1;
+}
+@media (max-width: 700px) {
+  .details-section .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.section-title { display: flex; align-items: center; gap: 12px; }
+.section-title { justify-content: space-between; margin-bottom: 12px; }
+.section-title h2, .section-title p { margin: 0; }
+.section-title p, .hint { color: #666; font-size: .9rem; }
+.packaging-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+.packaging-row mat-form-field { width: 100%; }
+.packaging-row button { margin-top: 10px; }
+@media (max-width: 900px) {
+  .form-card { max-width: 760px; }
+  .packaging-row { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; }
+}
+@media (max-width: 600px) {
+  .page-header, .section-title { align-items: flex-start; flex-direction: column; }
+  .packaging-row { grid-template-columns: 1fr; }
+  .packaging-row button { justify-self: end; margin-top: 0; }
+}

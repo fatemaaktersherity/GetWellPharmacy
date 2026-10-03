@@ -1,0 +1,67 @@
+<div class="page-header">
+  <div>
+    <h1>{{ employee?.fullName || "Employee Details" }}</h1>
+    <p>Employee information and documents.</p>
+  </div>
+  <a mat-stroked-button routerLink="/employees"><mat-icon>arrow_back</mat-icon> Back to Employees</a>
+</div>
+
+@if (loading) {
+  <mat-card><mat-card-content>Loading employee details...</mat-card-content></mat-card>
+} @else {
+  @if (employee; as e) {
+  <mat-card>
+    <mat-card-header><mat-card-title>Employee Details</mat-card-title></mat-card-header>
+    <mat-card-content class="employee-info">
+      @if (photoUrl(e.photoPath); as photo) {
+        <img class="employee-photo" [src]="photo" [alt]="e.fullName" />
+      } @else {
+        <div class="employee-photo-placeholder"><mat-icon>person</mat-icon></div>
+      }
+      <div><small>Name</small><strong>{{ e.fullName }}</strong></div>
+      <div><small>Department</small><span>{{ e.departmentName || "-" }}</span></div>
+      <div><small>Email</small><span>{{ e.email || "-" }}</span></div>
+      <div><small>Join date</small><span>{{ e.hireDate ? (e.hireDate | date: "mediumDate") : "-" }}</span></div>
+      <div><small>Status</small><span>{{ e.isActive ? "Active" : "Inactive" }}</span></div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="documents-card">
+    <mat-card-header><mat-card-title>Documents</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <mat-list>
+        @for (doc of documents; track doc.id) {
+          <mat-list-item>
+            <mat-icon matListItemIcon>description</mat-icon>
+            <div matLine>{{ doc.documentTitle }}{{ doc.documentNumber ? " — " + doc.documentNumber : "" }}</div>
+            <div matLine secondary>
+              Issued {{ doc.issueDate | date: "mediumDate" }}
+              @if (doc.expiryDate) { · Expires {{ doc.expiryDate | date: "mediumDate" }} }
+              @if (doc.isVerified) { · Verified }
+            </div>
+          </mat-list-item>
+        } @empty {
+          <p class="empty">No documents found for this employee.</p>
+        }
+      </mat-list>
+
+      <button mat-stroked-button type="button" (click)="showAddDocumentForm = !showAddDocumentForm">
+        <mat-icon>add</mat-icon> Add Document
+      </button>
+
+      @if (showAddDocumentForm) {
+        <form [formGroup]="documentForm" (ngSubmit)="addDocument()" class="document-form">
+          <mat-form-field appearance="outline"><mat-label>Document title *</mat-label><input matInput formControlName="documentTitle" placeholder="e.g. NID, Certificate" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Document number</mat-label><input matInput formControlName="documentNumber" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Issue date *</mat-label><input matInput type="date" formControlName="issueDate" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Expiry date</mat-label><input matInput type="date" formControlName="expiryDate" /></mat-form-field>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="savingDocument">{{ savingDocument ? "Saving..." : "Save Document" }}</button>
+            <button mat-button type="button" (click)="showAddDocumentForm = false">Cancel</button>
+          </div>
+        </form>
+      }
+    </mat-card-content>
+  </mat-card>
+  }
+}

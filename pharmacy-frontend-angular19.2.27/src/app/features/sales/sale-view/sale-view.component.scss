@@ -1,0 +1,150 @@
+@use "../../../shared/styles/pm-theme" as pm;
+
+:host {
+    display: block;
+    background: pm.$pm-bg-page;
+    margin: -24px;
+    padding: 24px;
+    min-height: calc(100vh - 64px);
+    box-sizing: border-box;
+}
+
+.page-header {
+    @include pm.pm-page-header;
+}
+
+::ng-deep mat-card.mat-mdc-card {
+    @include pm.pm-card;
+}
+
+.summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid pm.$pm-border;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.summary-item small {
+    color: pm.$pm-text-muted;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.summary-item b {
+    color: pm.$pm-text;
+    font-size: 15px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-badge {
+    @include pm.pm-status-pill(pm.$pm-success-bg, pm.$pm-success-text, pm.$pm-success-dot);
+    width: fit-content;
+}
+
+.status-badge.due {
+    @include pm.pm-status-pill(pm.$pm-warning-bg, pm.$pm-warning-text, pm.$pm-warning-text);
+}
+
+.status-badge.returned {
+    @include pm.pm-status-pill(pm.$pm-danger-bg, pm.$pm-danger-text, pm.$pm-danger-dot);
+}
+
+.due-note {
+    color: pm.$pm-danger-text;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+.items-table {
+    @include pm.pm-table;
+    border: 1px solid pm.$pm-border;
+    border-radius: pm.$pm-radius-sm;
+    overflow: hidden;
+}
+
+.grand-total {
+    text-align: right;
+    color: pm.$pm-primary;
+    margin-top: 20px;
+    font-weight: 700;
+}
+
+.totals { margin: 20px 0 0 auto; width: 320px; max-width: 100%; }
+.totals-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: pm.$pm-text; }
+.totals-row.discount { color: pm.$pm-danger-text; }
+.totals-row.net { border-top: 2px solid pm.$pm-border; margin-top: 4px; padding-top: 10px; font-size: 18px; font-weight: 700; color: pm.$pm-primary; }
+.totals-row.due { font-weight: 600; color: pm.$pm-danger-text; }
+
+::ng-deep mat-card-actions.mat-mdc-card-actions {
+    display: flex;
+    gap: 10px;
+    padding: 16px 20px 20px;
+    flex-wrap: wrap;
+}
+
+.rx-box {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid pm.$pm-border;
+}
+
+.rx-box small {
+    display: block;
+    margin-bottom: 4px;
+    color: pm.$pm-text-muted;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.rx-thumb {
+    height: 80px;
+    width: auto;
+    object-fit: cover;
+    border: 1px solid pm.$pm-border;
+    border-radius: 6px;
+}
+
+@media (max-width: 900px) {
+    :host {
+        margin: -16px;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 700px) {
+    .summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .items-table th,
+    .items-table td {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    ::ng-deep mat-card-actions.mat-mdc-card-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

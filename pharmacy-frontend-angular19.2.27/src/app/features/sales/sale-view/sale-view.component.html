@@ -1,0 +1,140 @@
+<div class="page-header">
+  <div>
+    <h1>Sale #{{ sale?.saleId }}</h1>
+    <p>Invoice details and audit-safe actions.</p>
+  </div>
+  <a mat-stroked-button routerLink="/sales">
+    <mat-icon>arrow_back</mat-icon> Back
+  </a>
+</div>
+
+@if (sale) {
+  <mat-card>
+    <mat-card-content>
+      <div class="summary">
+        <div class="summary-item">
+          <small>Customer</small>
+          <b>{{ sale.customerName || "Walk-in" }}</b>
+        </div>
+        <div class="summary-item">
+          <small>Date</small>
+          <b>{{ sale.saleDate | date: "medium" }}</b>
+        </div>
+        <div class="summary-item">
+          <small>Payment</small>
+          <b>{{ sale.paymentMethod }}</b>
+        </div>
+        <div class="summary-item">
+          <small>Status</small>
+          <span
+            class="status-badge"
+            [class.due]="!sale.isPaid && !isFullyReturned()"
+            [class.returned]="sale.hasReturns"
+          >
+            {{ statusLabel() }}
+          </span>
+          @if (!sale.isPaid && !isFullyReturned()) {
+            <small class="due-note"
+              >{{ sale.dueAmount | currency: "BDT " }} due</small
+            >
+          }
+        </div>
+      </div>
+
+      @if (sale.requiresPrescription || sale.prescriptionId) {
+        <div class="rx-box">
+          <div>
+            <small>Prescription</small>
+            <b>{{
+              sale.prescriptionId
+                ? "#" + sale.prescriptionId
+                : "Required (none linked)"
+            }}</b>
+          </div>
+          @if (prescriptionUrl(); as url) {
+            <a [href]="url" target="_blank" rel="noopener">
+              <img [src]="url" class="rx-thumb" alt="Prescription" />
+            </a>
+          }
+        </div>
+      }
+
+      <div class="table-wrap">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Batch</th>
+              <th>Packaging</th>
+              <th>Qty</th>
+              <th>Base qty</th>
+              <th>Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of sale.items; track item.saleItemId) {
+              <tr>
+                <td>{{ item.productName || "Line #" + item.saleItemId }}</td>
+                <td>{{ item.batchNumber || "-" }}</td>
+                <td>{{ item.unitName || "Unit" }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.baseQuantity }}</td>
+                <td>{{ item.unitPrice | currency: "BDT " }}</td>
+                <td>
+                  {{
+                    item.totalPrice ?? item.quantity * item.unitPrice
+                      | currency: "BDT "
+                  }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="totals">
+        <div class="totals-row">
+          <span>Subtotal</span
+          ><span>{{ sale.totalAmount | currency: "BDT " }}</span>
+        </div>
+
+        <div class="totals-row discount">
+          <span>Discount</span
+          ><span>{{
+            sale.discount ? "-" + (sale.discount | currency: "BDT ") : "-"
+          }}</span>
+        </div>
+
+        <div class="totals-row net">
+          <span>Net total</span
+          ><span>{{ netAmount() | currency: "BDT " }}</span>
+        </div>
+        <div class="totals-row">
+          <span>Paid</span
+          ><span>{{ sale.totalPaid ?? 0 | currency: "BDT " }}</span>
+        </div>
+        @if (!sale.isPaid) {
+          <div class="totals-row due">
+            <span>Balance due</span
+            ><span>{{ sale.dueAmount ?? netAmount() | currency: "BDT " }}</span>
+          </div>
+        }
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-stroked-button (click)="printSale()">
+        <mat-icon>print</mat-icon> Print Invoice
+      </button>
+      @if (!sale.isPaid) {
+        <button mat-flat-button color="primary" (click)="collectPayment()">
+          <mat-icon>payments</mat-icon> Receive Payment
+        </button>
+      }
+      <button mat-stroked-button color="warn" (click)="voidSale()">
+        <mat-icon>delete_outline</mat-icon> Void Sale
+      </button>
+    </mat-card-actions>
+  </mat-card>
+}

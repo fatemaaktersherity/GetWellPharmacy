@@ -1,0 +1,121 @@
+<div class="page-header">
+  <div>
+    <h1>{{ isEditMode ? "Edit Customer" : "New Customer" }}</h1>
+    <p>
+      {{
+        isEditMode
+          ? "Update this customer's details."
+          : "Create a customer account and optionally add a photo."
+      }}
+    </p>
+  </div>
+  <a mat-stroked-button routerLink="/customers"
+    ><mat-icon>arrow_back</mat-icon> Back</a
+  >
+</div>
+
+@if (loading) {
+  <mat-card><mat-card-content>Loading customer...</mat-card-content></mat-card>
+} @else {
+  <mat-card
+    ><mat-card-content
+      ><form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+        <mat-form-field
+          ><mat-label>First name *</mat-label
+          ><input matInput formControlName="firstName"
+        /></mat-form-field>
+        <mat-form-field
+          ><mat-label>Last name</mat-label
+          ><input matInput formControlName="lastName"
+        /></mat-form-field>
+        <mat-form-field
+          ><mat-label>Phone</mat-label><input matInput formControlName="phone"
+        /></mat-form-field>
+        <mat-form-field
+          ><mat-label>Email</mat-label
+          ><input matInput type="email" formControlName="email"
+        /></mat-form-field>
+        <mat-form-field
+          ><mat-label>Customer type *</mat-label
+          ><mat-select formControlName="customerTypeId">
+            @for (type of customerTypes; track type.id) {
+              <mat-option [value]="type.id">{{ type.name }}</mat-option>
+            }
+          </mat-select></mat-form-field
+        >
+        <mat-form-field
+          ><mat-label>Credit limit</mat-label
+          ><input matInput type="number" min="0" formControlName="creditLimit"
+        /></mat-form-field>
+        <div class="status-toggle">
+          <mat-slide-toggle formControlName="isActive">{{
+            form.value.isActive ? "Active" : "Inactive"
+          }}</mat-slide-toggle>
+        </div>
+        <div class="photo-picker">
+          <label for="customer-photo">Customer photo</label>
+          <input
+            id="customer-photo"
+            type="file"
+            accept="image/*"
+            (change)="selectPhoto($event)"
+          />
+          @if (preview) {
+            <img [src]="preview" alt="Customer photo preview" />
+          } @else if (existingPhotoUrl) {
+            <img [src]="existingPhotoUrl" alt="Current customer photo" />
+          }
+        </div>
+        <section class="address-editor">
+          <h2>Addresses</h2>
+          @if (addresses.length) {
+            <ul class="address-items">
+              @for (address of addresses; track $index) {
+                <li>
+                  <span>{{ address.label }}: {{ address.addressLine }}{{ address.city ? ", " + address.city : "" }}{{ address.isDefault ? " (Default)" : "" }}</span>
+                  <button mat-icon-button type="button" aria-label="Remove address" (click)="removeAddress($index)">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="address-empty">No addresses added.</p>
+          }
+          <button mat-stroked-button type="button" (click)="showAddAddressForm = !showAddAddressForm">
+            <mat-icon>add</mat-icon> Add Address
+          </button>
+          @if (showAddAddressForm) {
+            <div class="address-fields" [formGroup]="addressForm">
+              <mat-form-field appearance="outline"><mat-label>Label *</mat-label><input matInput formControlName="label" placeholder="Home, Office" /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Address line *</mat-label><input matInput formControlName="addressLine" /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>City</mat-label><input matInput formControlName="city" /></mat-form-field>
+              <label class="default-address"><input type="checkbox" formControlName="isDefault" /> Default address</label>
+              <div class="address-actions">
+                <button mat-button type="button" (click)="showAddAddressForm = false">Cancel</button>
+                <button mat-stroked-button type="button" (click)="addAddress()">Add to customer</button>
+              </div>
+            </div>
+          }
+        </section>
+        <div class="actions">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="saving"
+          >
+            {{
+              saving
+                ? "Saving..."
+                : isEditMode
+                  ? "Save Changes"
+                  : "Create Customer"
+            }}
+          </button>
+          <a mat-button routerLink="/customers">Cancel</a>
+        </div>
+      </form></mat-card-content
+    ></mat-card
+  >
+}

@@ -1,0 +1,569 @@
+<div class="page-header">
+  <div>
+    <h1>New Sale</h1>
+    <p>Create a sales invoice.</p>
+  </div>
+  <a mat-stroked-button routerLink="/sales"
+    ><mat-icon>arrow_back</mat-icon> Back</a
+  >
+</div>
+
+<div class="sale-grid">
+  <mat-card>
+    <mat-card-header
+      ><mat-card-title>Add Items</mat-card-title></mat-card-header
+    >
+    <mat-card-content>
+      <div class="scan-row">
+        <mat-form-field appearance="outline" class="scan-field">
+          <mat-label>Scan barcode</mat-label>
+          <input
+            matInput
+            [formControl]="barcodeControl"
+            (keyup.enter)="scanBarcode()"
+            [readonly]="scanningBarcode"
+            placeholder="Scan or type a barcode, then press Enter"
+            autocomplete="off"
+          />
+          <mat-icon matSuffix>qr_code_scanner</mat-icon>
+        </mat-form-field>
+        <span class="scan-hint">
+          <mat-icon>bolt</mat-icon>
+          Adds the earliest-expiring batch from Main Warehouse straight to the cart.
+        </span>
+      </div>
+      <form [formGroup]="filterForm" class="filter-row">
+        <mat-form-field appearance="outline" class="search-field-input">
+          <mat-label>Search product or generic name</mat-label>
+          <input
+            matInput
+            formControlName="search"
+            [matAutocomplete]="searchAuto"
+            placeholder="Type brand or generic name..."
+          />
+          <mat-icon matSuffix>search</mat-icon>
+          <mat-autocomplete
+            #searchAuto="matAutocomplete"
+            (optionSelected)="selectSearchTerm($event)"
+          >
+            @for (
+              s of searchSuggestions(filterForm.controls.search.value);
+              track s
+            ) {
+              <mat-option [value]="s">{{ s }}</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+        <div class="search-field-hint">
+          <mat-icon>info</mat-icon>
+          <span
+            >Matches either the brand name or the generic name — try a generic
+            like "Paracetamol" to see every brand you carry.</span
+          >
+        </div>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Company</mat-label>
+          <mat-select formControlName="companyId">
+            <mat-option [value]="null">All Companies</mat-option>
+            @for (c of companyOptions; track c.id) {
+              <mat-option [value]="c.id">{{ c.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Dosage Form</mat-label>
+          <mat-select formControlName="dosageFormId">
+            <mat-option [value]="null">All Dosage Forms</mat-option>
+            @for (d of dosageFormOptions; track d.id) {
+              <mat-option [value]="d.id">{{ d.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Strength</mat-label>
+          <mat-select formControlName="strength">
+            <mat-option [value]="null">All Strengths</mat-option>
+            @for (s of strengthOptions; track s) {
+              <mat-option [value]="s">{{ s }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <button
+          mat-stroked-button
+          type="button"
+          class="clear-btn"
+          (click)="clearFilters()"
+        >
+          <mat-icon>clear</mat-icon> Clear
+        </button>
+      </form>
+
+      <p class="ref-hint">
+        <mat-icon>touch_app</mat-icon>
+        Click a packaging row below to add it to the sale.
+      </p>
+
+      <div class="product-ref-list">
+        @for (card of referenceCards; track card.productId) {
+          <div
+            class="product-ref-card"
+            [class.active]="selectedProduct?.productId === card.productId"
+          >
+            <div class="product-ref-header">
+              @if (imageUrl(activeBatch(card).productImagePath); as img) {
+                <img [src]="img" [alt]="activeBatch(card).productName" />
+              } @else {
+                <span class="line-placeholder"
+                  ><mat-icon>medication</mat-icon></span
+                >
+              }
+              <div class="product-ref-title">
+                <strong>{{ activeBatch(card).productName }}</strong>
+                <span class="ref-meta">
+                  {{ activeBatch(card).strength }}
+                  @if (activeBatch(card).genericName) {
+                    <span class="dot">·</span
+                    >{{ activeBatch(card).genericName }}
+                  }
+                  @if (activeBatch(card).companyName) {
+                    <span class="dot">·</span
+                    >{{ activeBatch(card).companyName }}
+                  }
+                  @if (activeBatch(card).dosageFormName) {
+                    <span class="dot">·</span
+                    >{{ activeBatch(card).dosageFormName }}
+                  }
+                </span>
+              </div>
+            </div>
+
+            @if (card.batches.length > 1) {
+              <div class="batch-picker">
+                <mat-icon
+                  class="batch-picker-icon"
+                  matTooltip="FEFO: the earliest-expiring batch is selected by default"
+                  >info</mat-icon
+                >
+                <select
+                  class="batch-select"
+                  [ngModel]="activeBatch(card).id"
+                  [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="chooseBatch(card.productId, $event)"
+                >
+                  @for (b of card.batches; track b.id) {
+                    <option [ngValue]="b.id">
+                      Batch {{ b.batchNumber }} — Exp
+                      {{ b.expiryDate | date: "MMM yyyy" }} ({{
+                        b.availableQuantity
+                      }}
+                      {{ b.unitName }})
+                    </option>
+                  }
+                </select>
+              </div>
+            }
+
+            <span
+              class="expiry-badge"
+              [class.expiry-soon]="isExpiringSoon(activeBatch(card))"
+            >
+              <mat-icon>event</mat-icon>
+              Batch {{ activeBatch(card).batchNumber }} · Exp
+              {{ activeBatch(card).expiryDate | date: "MMM yyyy" }}
+              @if (isExpired(activeBatch(card))) {
+                (expired)
+              }
+            </span>
+
+            <table class="ref-table">
+              <thead>
+                <tr>
+                  <th>Packaging</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (
+                  pkg of availablePackages(activeBatch(card));
+                  track packageKey(pkg)
+                ) {
+                  <tr
+                    class="ref-row"
+                    [class.ref-row-base]="packageKey(pkg) === 'base'"
+                    (click)="addFromReference(activeBatch(card), pkg)"
+                  >
+                    <td>
+                      {{ packagingLabel(pkg) }}
+                      @if (packageKey(pkg) === "base") {
+                        <span class="base-badge">BASE</span>
+                      }
+                    </td>
+                    <td>{{ pkg.perUnitPrice | currency: "BDT " }}</td>
+                    <td
+                      [style.color]="
+                        isLowStock(activeBatch(card)) ? '#c0392b' : null
+                      "
+                    >
+                      {{ activeBatch(card).availableQuantity }}
+                      {{ activeBatch(card).unitName }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @empty {
+          <p class="empty">No products match these filters.</p>
+        }
+      </div>
+
+      @if (selectedProduct; as product) {
+        <div class="selected-product-preview">
+          @if (imageUrl(product.productImagePath); as imageUrl) {
+            <img [src]="imageUrl" [alt]="product.productName" />
+          } @else {
+            <div class="image-placeholder"><mat-icon>medication</mat-icon></div>
+          }
+          <div class="preview-details">
+            <div class="preview-title">
+              <strong>{{ product.productName }}</strong>
+              @if (product.dosageFormName) {
+                <span class="dosage-form">{{ product.dosageFormName }}</span>
+              }
+            </div>
+            @if (product.genericName) {
+              <div class="preview-generic">
+                Generic: {{ product.genericName }}
+              </div>
+            }
+            @if (product.supplierName) {
+              <div class="preview-supplier">
+                Supplier: {{ product.supplierName }}
+              </div>
+            }
+            <div class="preview-rx">
+              <span
+                class="rx-badge"
+                [class.rx-yes]="product.requiresPrescription"
+                >Requires Prescription:
+                {{ product.requiresPrescription ? "Yes" : "No" }}</span
+              >
+            </div>
+            <div class="preview-meta">
+              <span>{{ product.strength }}</span>
+              @if (product.companyName) {
+                <span class="dot">·</span><span>{{ product.companyName }}</span>
+              }
+            </div>
+            <div class="preview-prices">
+              <span
+                >Unit Price: {{ product.salePrice | currency: "BDT " }} /
+                {{ product.unitName }}</span
+              >
+              @for (pack of alternativePackagings; track packageKey(pack)) {
+                <span
+                  >{{ packagingLabel(pack) }}:
+                  {{ pack.perUnitPrice | currency: "BDT " }}</span
+                >
+              }
+            </div>
+            <small
+              >Batch {{ product.batchNumber }} · Exp
+              {{ product.expiryDate | date: "MMM yyyy" }} ·
+              {{ product.availableQuantity }} {{ product.unitName }} available
+            </small>
+
+            <div class="product-actions">
+              @if (product.genericName) {
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="alt-brands-btn"
+                  (click)="openAlternateBrands()"
+                >
+                  <mat-icon>compare_arrows</mat-icon> Alternate Brands
+                </button>
+              }
+
+              <a
+                mat-stroked-button
+                [routerLink]="['/products', product.productId]"
+                fragment="monograph"
+              >
+                <mat-icon>description</mat-icon> Innovator's Monograph
+              </a>
+            </div>
+
+            @if (alsoAvailableAs.length) {
+              <div class="also-available">
+                <span class="also-available-label">Also available as:</span>
+                <mat-chip-set>
+                  @for (alt of alsoAvailableAs; track alt.productId) {
+                    <mat-chip (click)="selectStockItem(alt)"
+                      >{{ alt.strength }} ({{
+                        alt.dosageFormName || alt.unitName
+                      }})</mat-chip
+                    >
+                  }
+                </mat-chip-set>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="table-wrap">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Packaging</th>
+              <th>Qty</th>
+              <th>Base Qty</th>
+              <th>Unit Price</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items; track $index) {
+              <tr>
+                <td>
+                  <span class="line-product">
+                    @if (imageUrl(item.productImagePath); as imageUrl) {
+                      <img [src]="imageUrl" [alt]="item.productName" />
+                    } @else {
+                      <span class="line-placeholder"><mat-icon>medication</mat-icon></span>
+                    }
+                    <span>{{ item.productName }}<small>Batch {{ item.batchNumber }}</small></span>
+                  </span>
+                </td>
+                <td>{{ item.packageName }}</td>
+                <td>
+                  <div class="qty-stepper">
+                    <button class="qty-btn qty-btn-minus" type="button" (click)="changeQty($index, -1)" aria-label="Decrease quantity">
+                      <mat-icon>remove</mat-icon>
+                    </button>
+                    <input class="qty-input" type="number" min="1" step="1" [value]="item.quantity" (change)="onQtyInput($index, $event)" />
+                    <button class="qty-btn qty-btn-plus" type="button" (click)="changeQty($index, 1)" aria-label="Increase quantity">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
+                </td>
+                <td>{{ item.baseQuantity }}</td>
+                <td>{{ item.unitPrice | currency: "BDT " }}</td>
+                <td>{{ item.quantity * item.unitPrice | currency: "BDT " }}</td>
+                <td>
+                  <button mat-icon-button color="warn" type="button" (click)="removeItem($index)" aria-label="Remove item">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="empty">Add at least one product.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (items.length) {
+        <p class="cart-hint">
+          Each packaging is its own line. To sell a mix (e.g. 11 pcs = 1 Strip +
+          1 Pcs), click the "10 Strip" row once and the "Pcs" row once. The +/-
+          buttons change a line by one full packaging.
+        </p>
+      }
+
+      <h2 class="grand-total">
+        Total: {{ grandTotal | currency: "BDT " : "symbol" : "1.0-2" }}
+      </h2>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header><mat-card-title>Checkout</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="saleForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Customer</mat-label>
+          <input
+            matInput
+            [formControl]="customerSearchControl"
+            [matAutocomplete]="customerAuto"
+            (input)="onCustomerInput($event)"
+            (blur)="onCustomerSearchBlur()"
+            autocomplete="off"
+            placeholder="Type a name to search, or add a new customer"
+          />
+          <mat-icon matSuffix>search</mat-icon>
+          <mat-autocomplete
+            #customerAuto="matAutocomplete"
+            [displayWith]="customerDisplayFn"
+            (optionSelected)="onCustomerOptionSelected($event)"
+          >
+            <mat-option [value]="WALK_IN" (mousedown)="$event.preventDefault()"
+              >Walk-in</mat-option
+            >
+            @for (c of customerOptions; track c.customerId) {
+              <mat-option [value]="c" (mousedown)="$event.preventDefault()"
+                >{{ c.firstName }} {{ c.lastName }}
+                @if (c.phone) {
+                  · {{ c.phone }}
+                }
+              </mat-option>
+            }
+            @if (showAddNewCustomerOption) {
+              <mat-option
+                [value]="ADD_NEW_CUSTOMER"
+                class="new-customer-option"
+                (mousedown)="$event.preventDefault()"
+              >
+                <mat-icon>person_add</mat-icon> Add "{{ pendingCustomerName }}"
+                as new customer
+              </mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+
+        @if (showAddCustomerPhone) {
+          <div class="add-customer-panel">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label
+                >Phone number for {{ pendingCustomerName }} *</mat-label
+              >
+              <input
+                matInput
+                [formControl]="customerPhoneControl"
+                type="tel"
+                autocomplete="off"
+                (keydown.enter)="saveNewCustomer()"
+              />
+              @if (
+                customerPhoneControl.touched &&
+                customerPhoneControl.hasError("required")
+              ) {
+                <mat-error>Phone number is required</mat-error>
+              } @else if (
+                customerPhoneControl.touched &&
+                customerPhoneControl.hasError("pattern")
+              ) {
+                <mat-error>Enter digits only, e.g. 01712345678</mat-error>
+              }
+            </mat-form-field>
+
+            @if (duplicateCustomerMatch; as dup) {
+              <div class="notice">
+                This number is already saved for
+                <strong>{{ dup.firstName }} {{ dup.lastName }}</strong
+                >.
+                <button
+                  mat-stroked-button
+                  type="button"
+                  (click)="useDuplicateCustomer()"
+                >
+                  Use this customer
+                </button>
+              </div>
+            }
+            @if (newCustomerError; as msg) {
+              <div class="notice error">{{ msg }}</div>
+            }
+
+            <div class="add-customer-actions">
+              <button
+                mat-raised-button
+                color="primary"
+                type="button"
+                [disabled]="savingNewCustomer"
+                (click)="saveNewCustomer()"
+              >
+                {{ savingNewCustomer ? "Saving..." : "Save & select customer" }}
+              </button>
+              <button mat-button type="button" (click)="cancelAddNewCustomer()">
+                Cancel
+              </button>
+            </div>
+          </div>
+        }
+
+        <div class="prescription-field">
+          <mat-checkbox [formControl]="saleForm.controls.requiresPrescription">
+            Prescription needed
+          </mat-checkbox>
+
+          @if (
+            cartNeedsPrescription &&
+            !saleForm.controls.requiresPrescription.value
+          ) {
+            <div class="rx-hint">
+              ⚠ One or more items in this cart normally require a prescription.
+            </div>
+          }
+
+          @if (saleForm.controls.requiresPrescription.value) {
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Select Prescription</mat-label>
+              <mat-select
+                [(ngModel)]="selectedPrescriptionId"
+                [ngModelOptions]="{ standalone: true }"
+              >
+                @for (p of prescriptions; track p.prescriptionId) {
+                  <mat-option [value]="p.prescriptionId">
+                    #{{ p.prescriptionId }} — Dr. {{ p.doctorName }} ({{
+                      p.prescriptionDate | date: "d MMM y"
+                    }})
+                  </mat-option>
+                }
+              </mat-select>
+              @if (prescriptions.length === 0) {
+                <mat-hint
+                  >No prescriptions on file for this customer yet.</mat-hint
+                >
+              }
+            </mat-form-field>
+
+            @if (selectedPrescription?.imagePath) {
+              <img
+                [src]="imageUrl(selectedPrescription!.imagePath)"
+                class="rx-preview"
+                alt="Prescription"
+              />
+            }
+          }
+        </div>
+
+        <p class="checkout-note">
+          Payment method, discount and paid / due status are set in the next
+          step.
+        </p>
+
+        <div class="summary">
+          <div class="summary-row">
+            <span>Subtotal</span
+            ><strong>{{ grandTotal | currency: "BDT " }}</strong>
+          </div>
+          <div class="summary-row total">
+            <span>Total Payable</span
+            ><strong>{{ grandTotal | currency: "BDT " }}</strong>
+          </div>
+        </div>
+
+        <button
+          mat-raised-button
+          color="primary"
+          class="checkout-btn"
+          type="button"
+          [disabled]="saving || !items.length"
+          (click)="openConfirmSaleDialog()"
+        >
+          {{ saving ? "Saving..." : "Complete Sale" }}
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

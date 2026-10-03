@@ -1,0 +1,578 @@
+<mat-sidenav-container class="sidenav-container">
+  <!-- =========================
+       SIDEBAR
+  ========================== -->
+
+  <mat-sidenav
+    #drawer
+    [mode]="isMobile() ? 'over' : 'side'"
+    [opened]="!isMobile()"
+    class="sidenav"
+    [class.collapsed]="collapsed() && !isMobile()"
+  >
+    <div class="logo">
+      <mat-icon>local_pharmacy</mat-icon>
+      <span>Get Well</span>
+    </div>
+
+    <!-- MENU -->
+    <mat-nav-list (click)="isMobile() && drawer.close()">
+      <!-- Dashboard -->
+      <a
+        mat-list-item
+        [routerLink]="dashboardLink()"
+        routerLinkActive="active"
+        [matTooltip]="collapsed() ? 'Dashboard' : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
+
+      <!-- =================================
+           GROUP: INVENTORY & CATALOG
+      ================================== -->
+      <button type="button" class="nav-section-toggle" (click)="$event.stopPropagation(); toggleSection('catalog')" [attr.aria-expanded]="isSectionExpanded('catalog')">
+        <span>Inventory &amp; Catalog</span>
+        <mat-icon>{{ isSectionExpanded('catalog') ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+      </button>
+      @if (isSectionExpanded('catalog')) {
+      <div class="nav-section-items">
+
+      <!-- Products -->
+      <a
+        mat-list-item
+        routerLink="/products"
+        routerLinkActive="active"
+        [matTooltip]="
+          collapsed()
+            ? 'Products' +
+              (lowStockCount() ? ' (' + lowStockCount() + ' low stock)' : '')
+            : ''
+        "
+        matTooltipPosition="right"
+      >
+        <mat-icon
+          matListItemIcon
+          [matBadge]="lowStockCount()"
+          [matBadgeHidden]="lowStockCount() === 0"
+          matBadgeColor="warn"
+          matBadgeSize="small"
+          matBadgeOverlap="false"
+          >medication</mat-icon
+        >
+        <span matListItemTitle>Products</span>
+      </a>
+
+      <!-- Product Groups -->
+      @if (can("Admin", "Manager")) {
+        <a
+          mat-list-item
+          routerLink="/product-groups"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Product Groups' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>category</mat-icon>
+          <span matListItemTitle>Product Groups</span>
+        </a>
+      }
+
+      <!-- Brands -->
+      <a
+        mat-list-item
+        routerLink="/brands"
+        routerLinkActive="active"
+        [matTooltip]="collapsed() ? 'Brands' : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon matListItemIcon>sort_by_alpha</mat-icon>
+        <span matListItemTitle>Brands</span>
+      </a>
+
+      <!-- Companies -->
+      @if (can("Admin", "Manager")) {
+        <a
+          mat-list-item
+          routerLink="/companies"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Companies' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>factory</mat-icon>
+          <span matListItemTitle>Companies</span>
+        </a>
+      }
+
+      <!-- Units -->
+      @if (can("Admin", "Manager")) {
+        <a
+          mat-list-item
+          routerLink="/units"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Units' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>straighten</mat-icon>
+          <span matListItemTitle>Units</span>
+        </a>
+      }
+
+      </div>
+      }
+
+      <!-- =================================
+           GROUP: SALES & PURCHASES
+      ================================== -->
+      <mat-divider></mat-divider>
+      <button type="button" class="nav-section-toggle" (click)="$event.stopPropagation(); toggleSection('sales')" [attr.aria-expanded]="isSectionExpanded('sales')">
+        <span>Sales &amp; Purchases</span>
+        <mat-icon>{{ isSectionExpanded('sales') ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+      </button>
+      @if (isSectionExpanded('sales')) {
+      <div class="nav-section-items">
+
+      <!-- Sales -->
+      <a
+        mat-list-item
+        routerLink="/sales"
+        routerLinkActive="active"
+        [matTooltip]="collapsed() ? 'Sales' : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon matListItemIcon>point_of_sale</mat-icon>
+        <span matListItemTitle>Sales</span>
+      </a>
+
+      <!-- Purchase Invoices -->
+      @if (can("Admin", "Manager")) {
+        <a
+          mat-list-item
+          routerLink="/purchases"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Purchase Invoices' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>shopping_cart</mat-icon>
+          <span matListItemTitle>Purchase Invoices</span>
+        </a>
+      }
+
+      <!-- Purchase Orders -->
+      @if (can("Admin", "Manager")) {
+        <a
+          mat-list-item
+          routerLink="/purchase-orders"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Purchase Orders' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>assignment</mat-icon>
+          <span matListItemTitle>Purchase Orders</span>
+        </a>
+      }
+
+      <!-- Purchase Requirements -->
+      @if (can("Admin", "Manager")) {
+        <a
+          mat-list-item
+          routerLink="/purchase-requirements"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Purchase Requirements' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>inventory_2</mat-icon>
+          <span matListItemTitle>Purchase Requirements</span>
+        </a>
+      }
+
+      <!-- Sale Returns -->
+      <a
+        mat-list-item
+        routerLink="/returns/sale"
+        routerLinkActive="active"
+        [matTooltip]="collapsed() ? 'Sale Returns' : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon matListItemIcon>assignment_return</mat-icon>
+        <span matListItemTitle>Sale Returns</span>
+      </a>
+
+      <!-- Purchase Returns -->
+      @if (can("Admin", "Manager")) {
+        <a
+          mat-list-item
+          routerLink="/returns/purchase"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Purchase Returns' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>assignment_returned</mat-icon>
+          <span matListItemTitle>Purchase Returns</span>
+        </a>
+      }
+
+      <!-- Suppliers -->
+      @if (can("Admin", "Manager")) {
+        <a
+          mat-list-item
+          routerLink="/suppliers"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Suppliers' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>local_shipping</mat-icon>
+          <span matListItemTitle>Suppliers</span>
+        </a>
+      }
+
+      </div>
+      }
+
+      <!-- =================================
+           GROUP: WAREHOUSES & STOCK
+      ================================== -->
+      <mat-divider></mat-divider>
+      <button type="button" class="nav-section-toggle" (click)="$event.stopPropagation(); toggleSection('stock')" [attr.aria-expanded]="isSectionExpanded('stock')">
+        <span>Warehouses &amp; Stock</span>
+        <mat-icon>{{ isSectionExpanded('stock') ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+      </button>
+      @if (isSectionExpanded('stock')) {
+      <div class="nav-section-items">
+
+      <!-- Inventory -->
+      <a
+        mat-list-item
+        routerLink="/inventory"
+        routerLinkActive="active"
+        [matTooltip]="collapsed() ? 'Inventory' : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon matListItemIcon>warehouse</mat-icon>
+        <span matListItemTitle>Inventory</span>
+      </a>
+
+      <!-- Warehouses -->
+      @if (can("Admin", "Manager")) {
+        <a
+          mat-list-item
+          routerLink="/warehouses"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Warehouses' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>store</mat-icon>
+          <span matListItemTitle>Warehouses</span>
+        </a>
+      }
+
+      <!-- Stock Transfers -->
+
+      @if (can("Admin", "Manager")) {
+        <a
+          mat-list-item
+          routerLink="/stock-transfers"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Stock Transfers' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>swap_horiz</mat-icon>
+          <span matListItemTitle>Stock Transfers</span>
+        </a>
+      }
+
+      <!-- Expired Medicine -->
+      @if (can("Admin", "Manager", "Cashier")) {
+        <a
+          mat-list-item
+          routerLink="/expired"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Expired Medicine' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>event_busy</mat-icon>
+          <span matListItemTitle>Expired Medicine</span>
+        </a>
+      }
+
+      <!-- Damaged Medicine -->
+      @if (can("Admin", "Manager", "Cashier")) {
+        <a
+          mat-list-item
+          routerLink="/damage"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Damaged Medicine' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>broken_image</mat-icon>
+          <span matListItemTitle>Damaged Medicine</span>
+        </a>
+      }
+
+      </div>
+      }
+
+      <!-- =================================
+           GROUP: PEOPLE
+      ================================== -->
+      <mat-divider></mat-divider>
+      <button type="button" class="nav-section-toggle" (click)="$event.stopPropagation(); toggleSection('people')" [attr.aria-expanded]="isSectionExpanded('people')">
+        <span>People</span>
+        <mat-icon>{{ isSectionExpanded('people') ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+      </button>
+      @if (isSectionExpanded('people')) {
+      <div class="nav-section-items">
+
+      <!-- Doctors -->
+      <a
+        mat-list-item
+        routerLink="/doctors"
+        routerLinkActive="active"
+        [matTooltip]="collapsed() ? 'Doctors' : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon matListItemIcon>medical_services</mat-icon>
+        <span matListItemTitle>Doctors</span>
+      </a>
+
+      <!-- Prescriptions -->
+      <a
+        mat-list-item
+        routerLink="/prescriptions"
+        routerLinkActive="active"
+        [matTooltip]="collapsed() ? 'Prescriptions' : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon matListItemIcon>description</mat-icon>
+        <span matListItemTitle>Prescriptions</span>
+      </a>
+
+      <!-- Customers -->
+      <a
+        mat-list-item
+        routerLink="/customers"
+        routerLinkActive="active"
+        [matTooltip]="collapsed() ? 'Customers' : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon matListItemIcon>people</mat-icon>
+        <span matListItemTitle>Customers</span>
+      </a>
+
+      <!-- Employees -->
+      @if (can("Admin")) {
+        <a
+          mat-list-item
+          routerLink="/employees"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Employees' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>badge</mat-icon>
+          <span matListItemTitle>Employees</span>
+        </a>
+      }
+
+      </div>
+      }
+
+      <!-- =================================
+           GROUP: REPORTS
+      ================================== -->
+      <mat-divider></mat-divider>
+      <button type="button" class="nav-section-toggle" (click)="$event.stopPropagation(); toggleSection('reports')" [attr.aria-expanded]="isSectionExpanded('reports')">
+        <span>Reports</span>
+        <mat-icon>{{ isSectionExpanded('reports') ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+      </button>
+      @if (isSectionExpanded('reports')) {
+      <div class="nav-section-items">
+
+      <!-- Sale Reports -->
+      @if (can("Admin", "Manager", "Cashier")) {
+        <a
+          mat-list-item
+          routerLink="/reports"
+          [queryParams]="{ type: 'sales' }"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Sale Reports' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>assessment</mat-icon>
+          <span matListItemTitle>Sale Reports</span>
+        </a>
+      }
+
+      </div>
+      }
+
+      <!-- =================================
+           GROUP: ADMIN & FINANCE
+      ================================== -->
+      <mat-divider></mat-divider>
+      <button type="button" class="nav-section-toggle" (click)="$event.stopPropagation(); toggleSection('admin')" [attr.aria-expanded]="isSectionExpanded('admin')">
+        <span>Admin &amp; Finance</span>
+        <mat-icon>{{ isSectionExpanded('admin') ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+      </button>
+      @if (isSectionExpanded('admin')) {
+      <div class="nav-section-items">
+
+      <!-- Accounting -->
+      @if (can("Admin")) {
+        <a
+          mat-list-item
+          routerLink="/users-roles"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Users & Roles' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>admin_panel_settings</mat-icon>
+          <span matListItemTitle>Users & Roles</span>
+        </a>
+
+        <a mat-list-item routerLink="/activity-log" routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Activity Log' : ''" matTooltipPosition="right">
+          <mat-icon matListItemIcon>history</mat-icon>
+          <span matListItemTitle>Activity Log</span>
+        </a>
+
+        <a
+          mat-list-item
+          routerLink="/ledger"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Accounting' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>account_balance</mat-icon>
+          <span matListItemTitle>Accounting</span>
+        </a>
+
+        <!-- Payment Methods -->
+        <a
+          mat-list-item
+          routerLink="/payment-methods"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'Payment Methods' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>payments</mat-icon>
+          <span matListItemTitle>Payment Methods</span>
+        </a>
+
+        <!-- SMS Log -->
+        <a
+          mat-list-item
+          routerLink="/sms-logs"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? 'SMS Log' : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon>sms</mat-icon>
+          <span matListItemTitle>SMS Log</span>
+        </a>
+      }
+      </div>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- =========================
+       MAIN CONTENT
+  ========================== -->
+
+  <mat-sidenav-content>
+    <!-- TOOLBAR -->
+    <mat-toolbar>
+      <!-- Menu Button -->
+      <button
+        mat-icon-button
+        (click)="drawer.toggle()"
+        aria-label="Toggle navigation"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <!-- Title -->
+      <span class="toolbar-title"> Medical Shop Management </span>
+
+      <!-- Browse Menu -->
+      <button mat-button [matMenuTriggerFor]="browseMenu">
+        <mat-icon>menu_book</mat-icon>
+
+        Browse
+
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
+
+      <!-- Browse Dropdown -->
+      <mat-menu #browseMenu="matMenu">
+        <button
+          mat-menu-item
+          [routerLink]="['/brands']"
+          [queryParams]="{ type: 'Allopathic' }"
+        >
+          Brand Names (Allopathic)
+        </button>
+
+        <button
+          mat-menu-item
+          [routerLink]="['/brands']"
+          [queryParams]="{ type: 'Herbal' }"
+        >
+          Brand Names (Herbal)
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <button
+          mat-menu-item
+          [routerLink]="['/generics']"
+          [queryParams]="{ type: 'Allopathic' }"
+        >
+          Generics (Allopathic)
+        </button>
+
+        <button
+          mat-menu-item
+          [routerLink]="['/generics']"
+          [queryParams]="{ type: 'Herbal' }"
+        >
+          Generics (Herbal)
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <button mat-menu-item routerLink="/companies">Pharmaceuticals</button>
+
+        <button mat-menu-item routerLink="/dosage-forms">Dosage Forms</button>
+      </mat-menu>
+
+      <!-- Spacer -->
+      <span class="spacer"></span>
+
+      <!-- User Menu -->
+      <button mat-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+
+        {{ (auth.user$ | async)?.fullName || "User" }}
+      </button>
+
+      <!-- User Dropdown -->
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item routerLink="/change-password">
+          <mat-icon>lock_reset</mat-icon>
+          <span>Change Password</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <!-- PAGE CONTENT -->
+    <main class="content">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

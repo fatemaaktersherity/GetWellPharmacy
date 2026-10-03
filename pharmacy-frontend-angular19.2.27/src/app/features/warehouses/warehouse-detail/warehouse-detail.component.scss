@@ -1,0 +1,97 @@
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    h1 {
+        flex: 1;
+        margin: 0;
+    }
+}
+
+.summary-card {
+    margin-bottom: 16px;
+    padding: 16px;
+}
+
+.summary-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.capacity-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    span {
+        font-size: 13px;
+        color: #666;
+    }
+}
+
+.tab-table {
+    width: 100%;
+    margin-top: 12px;
+}
+
+.tab-actions {
+    margin: 16px 0 4px;
+}
+
+.inline-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.empty-msg {
+    padding: 16px;
+    color: #888;
+}
+
+.transfer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.transfer-header-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.transfer-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.qty-field {
+    width: 100px;
+}
+
+.transfer-actions {
+    margin-top: 8px;
+}
+
+h3 {
+    margin-top: 24px;
+}
+
+.wh-photo {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}

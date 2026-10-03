@@ -1,0 +1,132 @@
+@use "../../../shared/styles/pm-theme" as pm;
+
+:host {
+  display: block;
+  background: pm.$pm-bg-page;
+  margin: -24px;
+  padding: 24px;
+  min-height: calc(100vh - 64px);
+  box-sizing: border-box;
+}
+
+.page-header {
+  @include pm.pm-page-header;
+}
+
+::ng-deep mat-card.mat-mdc-card {
+  @include pm.pm-card;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.search-field {
+  width: min(400px, 100%);
+  margin-bottom: 8px;
+}
+
+table {
+  @include pm.pm-table;
+  min-width: 920px;
+}
+
+.empty {
+  padding: 32px;
+  text-align: center;
+  color: pm.$pm-text-muted;
+}
+
+.sale-thumb,
+.sale-placeholder {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.sale-placeholder {
+  display: grid;
+  place-items: center;
+  background: pm.$pm-primary-tint;
+  color: pm.$pm-primary;
+}
+
+// Status pill + its due/returned note, stacked vertically so the note never
+// sits flush against the badge on the same line.
+td.mat-column-status {
+  vertical-align: top;
+}
+
+.status-badge {
+  @include pm.pm-status-pill(pm.$pm-success-bg, pm.$pm-success-text, pm.$pm-success-dot);
+}
+
+.status-badge.returned {
+  @include pm.pm-status-pill(pm.$pm-danger-bg, pm.$pm-danger-text, pm.$pm-danger-dot);
+}
+
+td.mat-column-status small {
+  display: block;
+  margin-top: 4px;
+}
+
+td.mat-column-batch,
+td.mat-column-customer {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+td small {
+  color: pm.$pm-text-faint;
+}
+
+td small.returned-note {
+  color: pm.$pm-danger-text;
+}
+
+// Icon + text actions wrap onto their own line with breathing room instead
+// of crowding against each other in a narrow column.
+td.mat-column-actions {
+  white-space: normal;
+}
+
+td.mat-column-actions > * {
+  vertical-align: middle;
+}
+
+td.mat-column-actions button[mat-stroked-button] {
+  margin-left: 4px;
+}
+
+.discount-amount { color: #c62828; font-weight: 500; }
+
+// ---- Responsiveness ----
+@media (max-width: 900px) {
+  :host {
+    margin: -16px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .search-field {
+    width: 100%;
+  }
+
+  table {
+    font-size: 13px;
+  }
+
+  table th,
+  table td {
+    padding: 8px 10px;
+  }
+}

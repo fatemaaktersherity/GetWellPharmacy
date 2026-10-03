@@ -1,0 +1,395 @@
+<div class="page-header">
+  <a mat-icon-button routerLink="/warehouses" aria-label="Back"
+    ><mat-icon>arrow_back</mat-icon></a
+  >
+  <h1>{{ warehouse?.name }}</h1>
+  <a
+    mat-raised-button
+    color="primary"
+    [routerLink]="['/warehouses/edit', warehouseId]"
+  >
+    <mat-icon>edit</mat-icon> Edit Warehouse
+  </a>
+</div>
+
+<mat-card *ngIf="warehouse" class="summary-card">
+  <div class="summary-row">
+    <img
+      *ngIf="warehousePhotoUrl"
+      [src]="warehousePhotoUrl"
+      class="wh-photo"
+      alt="Warehouse photo"
+    />
+    <div><strong>Type:</strong> {{ warehouse.warehouseTypeName }}</div>
+    <div><strong>Address:</strong> {{ warehouse.address || "-" }}</div>
+    <div><strong>Capacity:</strong> {{ warehouse.capacity }}</div>
+    <div>
+      <strong>Established:</strong>
+      {{
+        warehouse.establishedDate
+          ? (warehouse.establishedDate | date: "mediumDate")
+          : "-"
+      }}
+    </div>
+    <div>
+      <strong>Status:</strong> {{ warehouse.isActive ? "Active" : "Inactive" }}
+    </div>
+  </div>
+  <div class="capacity-row" *ngIf="warehouse.capacity">
+    <span>{{ utilizationInfo.label }}</span>
+    <mat-progress-bar
+      mode="determinate"
+      [value]="utilizationInfo.percent"
+      [color]="utilizationInfo.percent > 90 ? 'warn' : 'primary'"
+    ></mat-progress-bar>
+  </div>
+</mat-card>
+
+<mat-tab-group>
+  <!-- STOCK TAB -->
+  <mat-tab label="Stock ({{ stock.length }})">
+    <table mat-table [dataSource]="stock" class="tab-table">
+      <ng-container matColumnDef="product">
+        <th mat-header-cell *matHeaderCellDef>Product</th>
+        <td mat-cell *matCellDef="let s">{{ s.productName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="batch">
+        <th mat-header-cell *matHeaderCellDef>Batch</th>
+        <td mat-cell *matCellDef="let s">{{ s.batchNumber }}</td>
+      </ng-container>
+      <ng-container matColumnDef="qty">
+        <th mat-header-cell *matHeaderCellDef>Available</th>
+        <td mat-cell *matCellDef="let s">
+          {{ s.availableQuantity ?? s.quantity }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="expiry">
+        <th mat-header-cell *matHeaderCellDef>Expiry</th>
+        <td mat-cell *matCellDef="let s">{{ s.expiryDate }}</td>
+      </ng-container>
+      <ng-container matColumnDef="unitCost">
+        <th mat-header-cell *matHeaderCellDef>Unit Cost</th>
+        <td mat-cell *matCellDef="let s">{{ s.unitCost }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="stockCols"></tr>
+      <tr mat-row *matRowDef="let row; columns: stockCols"></tr>
+    </table>
+    <p *ngIf="!stock.length" class="empty-msg">No stock in this warehouse.</p>
+  </mat-tab>
+
+  <!-- RACKS TAB -->
+  <mat-tab label="Racks ({{ racks.length }})">
+    <div class="tab-actions">
+      <button mat-stroked-button (click)="showRackForm = !showRackForm">
+        <mat-icon>add</mat-icon> New Rack
+      </button>
+    </div>
+    <form
+      *ngIf="showRackForm"
+      [formGroup]="rackForm"
+      (ngSubmit)="addRack()"
+      class="inline-form"
+    >
+      <mat-form-field appearance="outline">
+        <mat-label>Rack Name</mat-label>
+        <input matInput formControlName="name" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Capacity (slots)</mat-label>
+        <input matInput type="number" formControlName="capacity" />
+      </mat-form-field>
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="rackForm.invalid"
+      >
+        Save
+      </button>
+    </form>
+
+    <table mat-table [dataSource]="racks" class="tab-table">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let r">{{ r.name }}</td>
+      </ng-container>
+      <ng-container matColumnDef="stockRows">
+        <th mat-header-cell *matHeaderCellDef>Batches Stored</th>
+        <td mat-cell *matCellDef="let r">{{ r.stockRowCount }}</td>
+      </ng-container>
+      <ng-container matColumnDef="capacity">
+        <th mat-header-cell *matHeaderCellDef>Capacity</th>
+        <td mat-cell *matCellDef="let r">
+          <span *ngIf="r.capacity"
+            >{{ r.stockRowCount }}/{{ r.capacity }} ({{
+              rackUtilization(r)
+            }}%)</span
+          >
+          <span *ngIf="!r.capacity">—</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let r">
+          {{ r.isActive ? "Active" : "Inactive" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let r">
+          <button mat-icon-button color="warn" (click)="deleteRack(r.id)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="rackCols"></tr>
+      <tr mat-row *matRowDef="let row; columns: rackCols"></tr>
+    </table>
+  </mat-tab>
+
+  <!-- TRANSFERS TAB -->
+  <mat-tab
+    label="Transfers ({{
+      outgoingTransfers.length + incomingTransfers.length
+    }})"
+  >
+    <div class="tab-actions">
+      <button
+        mat-stroked-button
+        color="primary"
+        (click)="showTransferForm = !showTransferForm"
+      >
+        <mat-icon>swap_horiz</mat-icon> New Outgoing Transfer
+      </button>
+    </div>
+
+    <form
+      *ngIf="showTransferForm"
+      [formGroup]="transferForm"
+      (ngSubmit)="submitTransfer()"
+      class="transfer-form"
+    >
+      <div class="transfer-header-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Invoice / Reference No.</mat-label>
+          <input matInput formControlName="invoiceId" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Send To Warehouse</mat-label>
+          <mat-select formControlName="toWarehouseId">
+            <mat-option *ngFor="let w of allWarehouses" [value]="w.id">{{
+              w.name
+            }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div
+        *ngFor="let line of transferItems; let i = index"
+        class="transfer-line"
+      >
+        <mat-form-field appearance="outline">
+          <mat-label>Batch (from this warehouse)</mat-label>
+          <mat-select
+            [(ngModel)]="line.sourceProductStockId"
+            [ngModelOptions]="{ standalone: true }"
+            (selectionChange)="onSourceStockChanged(line)"
+          >
+            <mat-option *ngFor="let s of stock" [value]="s.stockId">
+              {{ s.productName }} — {{ s.batchNumber }} (Avail:
+              {{ s.availableQuantity ?? s.quantity }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="qty-field">
+          <mat-label>Qty</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0.01"
+            [(ngModel)]="line.quantity"
+            [ngModelOptions]="{ standalone: true }"
+          />
+        </mat-form-field>
+        <button
+          mat-icon-button
+          color="warn"
+          type="button"
+          (click)="removeTransferLine(i)"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <button mat-stroked-button type="button" (click)="addTransferLine()">
+        <mat-icon>add</mat-icon> Add Batch Line
+      </button>
+
+      <div class="transfer-actions">
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="savingTransfer"
+        >
+          Send Transfer
+        </button>
+      </div>
+    </form>
+
+    <h3>Outgoing (from this warehouse)</h3>
+    <table mat-table [dataSource]="outgoingTransfers" class="tab-table">
+      <ng-container matColumnDef="invoice">
+        <th mat-header-cell *matHeaderCellDef>Ref No.</th>
+        <td mat-cell *matCellDef="let t">{{ t.invoiceId }}</td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let t">
+          {{ t.transferDate | date: "mediumDate" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="counterparty">
+        <th mat-header-cell *matHeaderCellDef>To</th>
+        <td mat-cell *matCellDef="let t">{{ t.toWarehouseName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="qty">
+        <th mat-header-cell *matHeaderCellDef>Qty</th>
+        <td mat-cell *matCellDef="let t">{{ t.totalQty }}</td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let t">
+          {{ t.isReceived ? "Received" : "In Transit" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let t">
+          <input
+            #f
+            type="file"
+            accept="image/*"
+            hidden
+            (change)="uploadReceipt(t, $event)"
+          />
+          <button
+            mat-icon-button
+            (click)="f.click()"
+            aria-label="Attach receipt"
+          >
+            <mat-icon>attach_file</mat-icon>
+          </button>
+          <button
+            *ngIf="!t.isReceived"
+            mat-icon-button
+            color="warn"
+            (click)="deleteTransfer(t)"
+            aria-label="Delete transfer"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="transferCols"></tr>
+      <tr mat-row *matRowDef="let row; columns: transferCols"></tr>
+    </table>
+    <p *ngIf="!outgoingTransfers.length" class="empty-msg">
+      No outgoing transfers.
+    </p>
+
+    <h3>Incoming (to this warehouse)</h3>
+    <table mat-table [dataSource]="incomingTransfers" class="tab-table">
+      <ng-container matColumnDef="invoice">
+        <th mat-header-cell *matHeaderCellDef>Ref No.</th>
+        <td mat-cell *matCellDef="let t">{{ t.invoiceId }}</td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let t">
+          {{ t.transferDate | date: "mediumDate" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="counterparty">
+        <th mat-header-cell *matHeaderCellDef>From</th>
+        <td mat-cell *matCellDef="let t">{{ t.fromWarehouseName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="qty">
+        <th mat-header-cell *matHeaderCellDef>Qty</th>
+        <td mat-cell *matCellDef="let t">{{ t.totalQty }}</td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let t">
+          {{ t.isReceived ? "Received" : "In Transit" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let t">
+          <button
+            *ngIf="!t.isReceived"
+            mat-stroked-button
+            color="primary"
+            (click)="markReceived(t)"
+          >
+            Mark Received
+          </button>
+          <button
+            *ngIf="!t.isReceived"
+            mat-icon-button
+            color="warn"
+            (click)="deleteTransfer(t)"
+            aria-label="Delete transfer"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="transferCols"></tr>
+      <tr mat-row *matRowDef="let row; columns: transferCols"></tr>
+    </table>
+    <p *ngIf="!incomingTransfers.length" class="empty-msg">
+      No incoming transfers.
+    </p>
+  </mat-tab>
+
+  <!-- DISPOSAL HISTORY TAB -->
+  <mat-tab label="Disposal History ({{ disposals.length }})">
+    <table mat-table [dataSource]="disposals" class="tab-table">
+      <ng-container matColumnDef="product">
+        <th mat-header-cell *matHeaderCellDef>Product</th>
+        <td mat-cell *matCellDef="let d">{{ d.productName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="batch">
+        <th mat-header-cell *matHeaderCellDef>Batch</th>
+        <td mat-cell *matCellDef="let d">{{ d.batchNumber }}</td>
+      </ng-container>
+      <ng-container matColumnDef="qty">
+        <th mat-header-cell *matHeaderCellDef>Qty</th>
+        <td mat-cell *matCellDef="let d">{{ d.quantity }}</td>
+      </ng-container>
+      <ng-container matColumnDef="cost">
+        <th mat-header-cell *matHeaderCellDef>Cost</th>
+        <td mat-cell *matCellDef="let d">
+          {{ d.totalCost | currency: "BDT " }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="method">
+        <th mat-header-cell *matHeaderCellDef>Method</th>
+        <td mat-cell *matCellDef="let d">{{ d.disposalMethod }}</td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let d">
+          {{ d.disposalDate | date: "mediumDate" }}
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="disposalCols"></tr>
+      <tr mat-row *matRowDef="let row; columns: disposalCols"></tr>
+    </table>
+    <p *ngIf="!disposals.length" class="empty-msg">
+      No expired or damaged stock recorded for this warehouse.
+    </p>
+  </mat-tab>
+</mat-tab-group>

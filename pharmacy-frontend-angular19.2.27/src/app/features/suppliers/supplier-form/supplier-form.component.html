@@ -1,0 +1,113 @@
+<div class="page-header">
+  <h1>{{ isEditMode ? "Edit Supplier" : "Add Supplier" }}</h1>
+</div>
+<mat-card
+  ><mat-card-content
+    ><form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+      <mat-form-field
+        ><mat-label>Company</mat-label
+        ><mat-select formControlName="companyId">
+          <mat-option [value]="individualCompanyValue"
+            >— Individual / Other (no company) —</mat-option
+          >
+          @for (c of companies; track c.id) {
+            <mat-option [value]="c.id">{{ c.name }}</mat-option>
+          }
+        </mat-select></mat-form-field
+      >
+      <mat-form-field
+        ><mat-label>Name</mat-label
+        ><input matInput formControlName="supplierName" /></mat-form-field
+      ><mat-form-field
+        ><mat-label>Type</mat-label
+        ><mat-select formControlName="supplierTypeId">
+          @for (type of supplierTypes; track type.id) {
+            <mat-option [value]="type.id">{{ type.name }}</mat-option>
+          }
+        </mat-select></mat-form-field
+      >
+      <mat-form-field
+        ><mat-label>Contact person</mat-label
+        ><input matInput formControlName="contactPerson" /></mat-form-field
+      ><mat-form-field
+        ><mat-label>Phone</mat-label
+        ><input matInput formControlName="phone" /></mat-form-field
+      ><mat-form-field
+        ><mat-label>Email</mat-label
+        ><input matInput formControlName="email" /></mat-form-field
+      ><mat-form-field
+        ><mat-label>Address</mat-label
+        ><input matInput formControlName="address"
+      /></mat-form-field>
+      <div>
+        <label>Supplier Logo / Photo</label
+        ><input type="file" accept="image/*" (change)="selectLogo($event)" />
+        @if (logoPreview) {
+          <a [href]="logoPreview" target="_blank"
+            ><img class="photo-thumb" [src]="logoPreview" alt="Logo preview"
+          /></a>
+        }
+      </div>
+
+      <section class="contacts-section" formArrayName="contacts">
+        <div class="contacts-header">
+          <label>Contacts</label>
+          <button type="button" mat-stroked-button (click)="addContact()">
+            <mat-icon>add</mat-icon> Add Contact
+          </button>
+        </div>
+        @for (contact of contactsArray.controls; track $index; let i = $index) {
+          <div [formGroupName]="i" class="contact-row">
+            <mat-form-field
+              ><mat-label>Name</mat-label
+              ><input matInput formControlName="contactName"
+            /></mat-form-field>
+            <mat-form-field
+              ><mat-label>Designation</mat-label
+              ><input matInput formControlName="designation" list="supplier-contact-designations"
+                placeholder="e.g. Sales Representative"
+            /></mat-form-field>
+            <mat-form-field
+              ><mat-label>Phone</mat-label
+              ><input matInput formControlName="phone"
+            /></mat-form-field>
+            <mat-checkbox formControlName="isPrimary">Primary</mat-checkbox>
+            <button
+              type="button"
+              mat-icon-button
+              color="warn"
+              (click)="removeContact(i)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        }
+        <datalist id="supplier-contact-designations">
+          <option value="Sales Representative"></option>
+          <option value="Sales Manager"></option>
+          <option value="Account Manager"></option>
+          <option value="Marketing Manager"></option>
+          <option value="Proprietor"></option>
+          <option value="Owner"></option>
+          <option value="Managing Director"></option>
+          <option value="Pharmacist"></option>
+        </datalist>
+        <p class="hint">Choose a suggestion or type a custom designation.</p>
+        @if (!contactsArray.length) {
+          <p class="hint">No contacts added yet.</p>
+        }
+      </section>
+
+      <div class="form-actions">
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="loading || form.invalid"
+        >
+          Save Supplier
+        </button>
+        <a mat-button routerLink="/suppliers">Cancel</a>
+      </div>
+    </form></mat-card-content
+  ></mat-card
+>

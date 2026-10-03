@@ -1,0 +1,49 @@
+<div class="page-header">
+    <div>
+        <h1>Prescriptions</h1>
+        <p>@if (doctorId) { Filtered by selected doctor. } @else { All recorded prescriptions. }</p>
+    </div>
+    <a mat-raised-button color="primary" routerLink="/prescriptions/new"><mat-icon>add</mat-icon> New Prescription</a>
+</div>
+<mat-card><mat-card-content class="table-wrap">
+        <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search prescriptions</mat-label>
+            <input matInput [formControl]="searchControl" placeholder="Search doctor, customer, diagnosis">
+            <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <table mat-table [dataSource]="filteredPrescriptions | slice:(pageIndex * pageSize):((pageIndex + 1) * pageSize)">
+            <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let p">{{ p.prescriptionDate | date:'mediumDate' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="doctor">
+                <th mat-header-cell *matHeaderCellDef>Doctor</th>
+                <td mat-cell *matCellDef="let p">{{ p.doctorName || p.doctorId }}</td>
+            </ng-container>
+            <ng-container matColumnDef="customer">
+                <th mat-header-cell *matHeaderCellDef>Customer</th>
+                <td mat-cell *matCellDef="let p">{{ p.customerName || p.customerId }}</td>
+            </ng-container>
+            <ng-container matColumnDef="diagnosis">
+                <th mat-header-cell *matHeaderCellDef>Diagnosis</th>
+                <td mat-cell *matCellDef="let p">{{ p.diagnosis || '-' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="items">
+                <th mat-header-cell *matHeaderCellDef>Medicines</th>
+                <td mat-cell *matCellDef="let p">{{ p.items.length }}</td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Actions</th>
+                <td mat-cell *matCellDef="let p">
+                    <a mat-icon-button [routerLink]="['/prescriptions/edit', p.prescriptionId]"
+                        title="Edit"><mat-icon>edit</mat-icon></a>
+                    <button type="button" mat-icon-button color="warn" (click)="delete(p.prescriptionId)"
+                        title="Delete"><mat-icon>delete</mat-icon></button>
+                </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="cols"></tr>
+            <tr mat-row *matRowDef="let row; columns: cols;"></tr>
+        </table>
+        <app-pagination [totalItems]="filteredPrescriptions.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+        @if (!filteredPrescriptions.length) { <div class="empty">No prescriptions found.</div> }
+    </mat-card-content></mat-card>

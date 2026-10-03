@@ -1,0 +1,24 @@
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+table {
+    width: 100%;
+}
+
+.empty-state {
+    padding: 24px;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.convert-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}

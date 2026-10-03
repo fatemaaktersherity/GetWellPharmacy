@@ -1,0 +1,5 @@
+.page-header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.search-field { width: min(400px, 100%); }
+.empty { color: #666; }
+p.empty { margin-left: 16px; }

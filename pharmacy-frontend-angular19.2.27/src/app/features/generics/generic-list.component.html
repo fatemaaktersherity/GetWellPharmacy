@@ -1,0 +1,30 @@
+<div class="page-header">
+  <div>
+    <h1>Generics</h1>
+    <p>Every generic/composition name in use, grouped, with a count of brands under it.</p>
+  </div>
+</div>
+
+<mat-card>
+  <mat-card-content>
+    <mat-button-toggle-group class="type-toggle" [value]="activeType" (change)="selectType($event.value)">
+      <mat-button-toggle [value]="null">All</mat-button-toggle>
+      <mat-button-toggle value="Allopathic">Allopathic</mat-button-toggle>
+      <mat-button-toggle value="Herbal">Herbal</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <div class="generic-grid">
+      @for (g of pagedGroups; track g.genericName) {
+        <a class="generic-card" [routerLink]="['/brands/search']" [queryParams]="{ search: g.genericName }">
+          <strong>{{ g.genericName }}</strong>
+          <span class="meta">{{ g.brandCount }} brand{{ g.brandCount === 1 ? '' : 's' }} · {{ g.brandType }}</span>
+        </a>
+      }
+    </div>
+
+    @if (!loading && !groups.length) {
+      <div class="empty">No generics found{{ activeType ? ' for ' + activeType : '' }}.</div>
+    }
+    <app-pagination [totalItems]="groups.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize" [showWhenEmpty]="true"></app-pagination>
+  </mat-card-content>
+</mat-card>

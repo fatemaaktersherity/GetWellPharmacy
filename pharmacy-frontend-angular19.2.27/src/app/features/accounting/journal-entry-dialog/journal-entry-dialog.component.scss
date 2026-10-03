@@ -1,0 +1,10 @@
+.dialog-title { display: flex; align-items: center; justify-content: space-between; }
+.close-btn { margin-left: auto; }
+.full-width { width: 100%; display: block; }
+.header-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.header-row mat-form-field { flex: 1 1 220px; }
+.lines-header, .line-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr 40px; gap: 8px; align-items: center; }
+.lines-header { font-size: 12px; color: #666; padding: 0 4px; }
+.totals { margin-top: 8px; font-weight: 500; }
+.totals.balanced { color: #388e3c; }
+.totals .warn { color: #c62828; font-weight: 500; }

@@ -1,0 +1,166 @@
+.admin-unlock-card {
+    margin-bottom: 16px;
+    border-left: 4px solid #e65100;
+    background: #fff8e1;
+}
+
+.admin-unlock-hint {
+    margin: 8px 0 0;
+    font-size: 0.85rem;
+    color: #6d4c00;
+}
+
+// ---- Form layout (age eta purchase-list.component.scss e bhul jayigay
+// chilo, tai kono effect korchilo na — ekhane sorano holo) ----
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.purchase-order-section {
+    order: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    gap: 12px;
+    align-items: start;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.items {
+    order: 1;
+}
+
+.items h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.purchase-info {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    gap: 12px;
+    align-items: start;
+}
+
+.line {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(110px, 1fr));
+    gap: 12px;
+    align-items: start;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.line-title {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.unit-tag {
+    font-size: 12px;
+    color: #555;
+    background: #e8eaf6;
+    border-radius: 10px;
+    padding: 2px 8px;
+}
+
+.line.cancelled {
+    opacity: 0.6;
+    background: #f3f3f3;
+}
+
+.line-total {
+    margin-left: auto;
+    font-weight: 500;
+}
+
+.cancelled-tag {
+    font-size: 12px;
+    color: #c62828;
+    background: #ffebee;
+    border-radius: 10px;
+    padding: 2px 8px;
+}
+
+.readonly-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 8px;
+}
+
+.readonly-info small {
+    color: #777;
+    font-size: 12px;
+}
+
+.empty-hint {
+    margin: 0;
+    color: #777;
+    font-size: 13px;
+}
+
+.purchase-info {
+    order: 2;
+    padding-top: 20px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.purchase-info>div {
+    align-self: center;
+}
+
+.totals {
+    order: 3;
+    font-size: 16px;
+}
+
+.purchase-actions {
+    order: 4;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.photo-thumb {
+    display: block;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    margin-top: 8px;
+    border-radius: 4px;
+}
+
+.po-hint {
+    grid-column: 1 / -1;
+    margin: -4px 0 4px;
+    font-size: 12px;
+    color: #777;
+}
+
+@media (max-width: 1000px) {
+
+    .line,
+    .purchase-info,
+    .purchase-order-section {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+
+    .line,
+    .purchase-info,
+    .purchase-order-section {
+        grid-template-columns: 1fr;
+    }
+}

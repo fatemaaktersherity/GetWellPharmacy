@@ -1,0 +1,211 @@
+@if (loading) {
+  <div class="state-msg">Loading…</div>
+} @else if (notFound || !product) {
+  <div class="state-msg">
+    <p>This brand could not be found.</p>
+    <a mat-stroked-button [routerLink]="backLink">Back to {{ backLabel }}</a>
+  </div>
+} @else {
+  <div class="page-header">
+    <a mat-button [routerLink]="backLink"
+      ><mat-icon>arrow_back</mat-icon> Back to {{ backLabel }}</a
+    >
+  </div>
+
+  <mat-card class="detail-card">
+    <mat-card-content>
+      <div class="detail-top">
+        <div class="titles">
+          <h1>
+            {{ product.productName }}
+            @if (product.dosageFormName) {
+              <span class="dosage-form">{{ product.dosageFormName }}</span>
+            }
+          </h1>
+          @if (product.genericName) {
+            <a
+              class="generic-link"
+              [routerLink]="['/brands/search']"
+              [queryParams]="{ generic: product.genericName }"
+              title="View medicines with the same generic"
+              >{{ product.genericName }}</a
+            >
+          }
+          <div class="strength-company">
+            <span class="strength">{{ product.strength }}</span>
+            @if (product.companyName) {
+              <span class="dot">·</span
+              ><span class="company">{{ product.companyName }}</span>
+            }
+          </div>
+          @if (product.brandType) {
+            <mat-chip-set class="type-chip-set">
+              <mat-chip [class.herbal]="product.brandType === 'Herbal'">{{
+                product.brandType
+              }}</mat-chip>
+            </mat-chip-set>
+          }
+        </div>
+
+        @if (imageUrl(product.imagePath); as img) {
+          <img class="pack-image" [src]="img" [alt]="product.productName" />
+        }
+      </div>
+
+      <div class="pricing">
+        <div class="price-line">
+          <span class="label">Unit Price:</span> ৳
+          {{ product.salePrice ?? product.unitPrice | number: "1.2-2" }}
+          <span class="unit-name">/ {{ product.unitName }}</span>
+        </div>
+        @for (
+          pack of packPrices;
+          track pack.id ?? pack.unitId + "-" + pack.displayName
+        ) {
+          <div class="price-line">
+            <span class="label">{{ packagingLabel(pack) }}:</span>
+            ৳ {{ pack.salePrice ?? pack.perUnitPrice | number: "1.2-2" }}
+            @if (isProductDetail) {
+              <span class="unit-name">
+                · Purchase ৳ {{ pack.purchasePrice ?? 0 | number: "1.2-2" }} ·
+                Distributor ৳ {{ pack.distributorPrice ?? 0 | number: "1.2-2" }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+
+      @if (isProductDetail) {
+        <div class="inventory-summary">
+          <div>
+            <span>Product code</span
+            ><strong>{{ product.productCode || "-" }}</strong>
+          </div>
+          <div>
+            <span>Product group</span
+            ><strong>{{ product.productGroupName || "-" }}</strong>
+          </div>
+          <div>
+            <span>Category</span>
+            <strong>{{ productCategoryLabel || "-" }}</strong>
+          </div>
+          <div>
+            <span>Status</span
+            ><strong>{{
+              product.isActive === false ? "Archived" : "Active"
+            }}</strong>
+          </div>
+        </div>
+        <div class="inventory-summary">
+          <div>
+            <span>Unit price</span
+            ><strong>৳ {{ product.unitPrice | number: "1.2-2" }}</strong>
+          </div>
+          <div>
+            <span>Purchase price</span
+            ><strong>৳ {{ product.purchasePrice | number: "1.2-2" }}</strong>
+          </div>
+          <div>
+            <span>Distributor price</span
+            ><strong
+              >৳ {{ product.distributorPrice ?? 0 | number: "1.2-2" }}</strong
+            >
+          </div>
+          <div>
+            <span>Sale price</span
+            ><strong>৳ {{ product.salePrice ?? 0 | number: "1.2-2" }}</strong>
+          </div>
+        </div>
+        <div class="inventory-summary">
+          <div>
+            <span>Available stock</span
+            ><strong>{{ product.stockQuantity }} {{ product.unitName }}</strong>
+          </div>
+          <div>
+            <span>Minimum stock</span
+            ><strong>{{ product.minStockQty }} {{ product.unitName }}</strong>
+          </div>
+          <div>
+            <span>Maximum stock</span
+            ><strong>{{ product.maxStockQty }} {{ product.unitName }}</strong>
+          </div>
+        </div>
+      }
+
+      <div class="product-actions">
+        @if (product.genericName) {
+          <a
+            mat-stroked-button
+            [routerLink]="['/brands/search']"
+            [queryParams]="{ generic: product.genericName }"
+          >
+            <mat-icon>compare_arrows</mat-icon> Alternate Brands
+          </a>
+        }
+      </div>
+
+      @if (alternateStrengths.length) {
+        <div class="also-available">
+          <h3>Also available as</h3>
+          <div class="chip-row">
+            @for (alt of alternateStrengths; track alt.id) {
+              <a mat-stroked-button [routerLink]="['/brands', alt.id]"
+                >{{ alt.strength }} ({{
+                  alt.dosageFormName || alt.unitName
+                }})</a
+              >
+            }
+          </div>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @if (product.details; as d) {
+    <mat-card id="monograph" class="detail-card">
+      <mat-card-header
+        ><mat-card-title>Innovator's Monograph</mat-card-title></mat-card-header
+      >
+      <mat-card-content>
+        <dl class="details-grid">
+          @if (d.description) {
+            <dt>Description</dt>
+            <dd>{{ d.description }}</dd>
+          }
+          @if (d.schedule) {
+            <dt>Schedule</dt>
+            <dd>{{ d.schedule }}</dd>
+          }
+          <dt>DAR No.</dt>
+          <dd>{{ d.darNo || "N/A" }}</dd>
+          @if (d.storageConditions) {
+            <dt>Storage Conditions</dt>
+            <dd>{{ d.storageConditions }}</dd>
+          }
+          @if (d.temperatureMin != null || d.temperatureMax != null) {
+            <dt>Storage Temperature</dt>
+            <dd>
+              {{ d.temperatureMin ?? "?" }} – {{ d.temperatureMax ?? "?" }} °C
+            </dd>
+          }
+          @if (d.pregnancyCategory) {
+            <dt>Pregnancy Category</dt>
+            <dd>{{ d.pregnancyCategory }}</dd>
+          }
+          <dt>Requires Prescription</dt>
+          <dd>{{ d.requiresPrescription ? "Yes" : "No" }}</dd>
+          <dt>Controlled Drug</dt>
+          <dd>{{ d.isControlledDrug ? "Yes" : "No" }}</dd>
+          @if (d.sideEffects) {
+            <dt>Side Effects</dt>
+            <dd>{{ d.sideEffects }}</dd>
+          }
+          @if (d.composition) {
+            <dt>Composition</dt>
+            <dd>{{ d.composition }}</dd>
+          }
+        </dl>
+      </mat-card-content>
+    </mat-card>
+  }
+}

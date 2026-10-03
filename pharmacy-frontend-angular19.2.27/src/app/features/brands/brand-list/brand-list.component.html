@@ -1,0 +1,50 @@
+<div class="page-header">
+  <div>
+    <h1>List of Brand Names</h1>
+    <p>Every brand, alphabetically. Jump to a letter or search instead.</p>
+  </div>
+  <a mat-raised-button color="primary" routerLink="/brands/search">
+    <mat-icon>search</mat-icon> Brand Search
+  </a>
+</div>
+
+<mat-card>
+  <mat-card-content>
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search brands</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="Search brand, generic, company or dosage form">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-button-toggle-group class="type-toggle" [value]="activeType" (change)="selectType($event.value)">
+      <mat-button-toggle [value]="null">All</mat-button-toggle>
+      <mat-button-toggle value="Allopathic">Allopathic</mat-button-toggle>
+      <mat-button-toggle value="Herbal">Herbal</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <div class="letters-strip">
+      <button mat-stroked-button [class.active]="activeLetter === null" (click)="selectLetter(null)">All</button>
+      @for (l of letters; track l) {
+        <button mat-stroked-button [class.active]="activeLetter === l" (click)="selectLetter(l)">{{ l }}</button>
+      }
+    </div>
+
+    <div class="brand-grid">
+      @for (b of visibleBrands; track b.id) {
+        <a class="brand-card" [routerLink]="['/brands', b.id]">
+          @if (imageUrl(b.imagePath); as img) { <img class="brand-thumb" [src]="img" [alt]="b.productName"> } @else { <div class="brand-thumb placeholder"><mat-icon>medication</mat-icon></div> }
+          <strong>{{ b.productName }}</strong>
+          <span class="strength">{{ b.strength }}</span>
+          @if (b.genericName) { <span class="generic">{{ b.genericName }}</span> }
+          <span class="meta">{{ b.dosageFormName || '—' }} · {{ b.companyName || 'Unknown company' }}</span>
+        </a>
+      }
+    </div>
+
+    @if (!loading && !filteredBrands.length) {
+      <div class="empty">No matching brands found{{ activeLetter ? ' starting with "' + activeLetter + '"' : '' }}.</div>
+    }
+
+    <app-pagination [totalItems]="paginationTotalItems" [pageIndex]="page - 1" [pageSize]="pageSize" [resetOnTotalChange]="false" [showWhenEmpty]="true" (pageIndexChange)="setPageIndex($event)" (pageSizeChange)="setPageSize($event)"></app-pagination>
+  </mat-card-content>
+</mat-card>

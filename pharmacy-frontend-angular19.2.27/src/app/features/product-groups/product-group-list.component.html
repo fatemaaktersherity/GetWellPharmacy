@@ -1,0 +1,127 @@
+<div class="page-header">
+  <div>
+    <h1>Product Groups</h1>
+    <p>Create medicine families, then manage their valid variants.</p>
+  </div>
+</div>
+<div class="content-grid">
+  <mat-card><mat-card-header><mat-card-title>{{ editing ? 'Edit Product Group' : 'Add Product Group'
+        }}</mat-card-title></mat-card-header><mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <mat-form-field appearance="outline" class="full-width"><mat-label>Group / Brand Name</mat-label><input matInput
+            formControlName="name" placeholder="e.g. Napa"><mat-error>Group name is
+            required.</mat-error></mat-form-field>
+        <mat-form-field appearance="outline" class="full-width"><mat-label>Generic Name</mat-label><input matInput
+            formControlName="genericName" placeholder="e.g. Paracetamol"></mat-form-field>
+        <mat-form-field appearance="outline" class="full-width"><mat-label>Company</mat-label><mat-select
+            formControlName="companyId"><mat-option [value]="null">— None —</mat-option>@for (company of companies;
+            track company.id) { <mat-option [value]="company.id">{{ company.name }}</mat-option>
+            }</mat-select></mat-form-field>
+        <div class="division-controls">
+          <mat-form-field appearance="outline" class="full-width"><mat-label>Division (optional)</mat-label><mat-select
+              formControlName="companyDivisionId" [disabled]="!form.controls.companyId.value || loadingDivisions">
+              <mat-option [value]="null">— No Division —</mat-option>
+              @for (division of divisions; track division.id) {
+                <mat-option [value]="division.id">{{ division.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <button type="button" mat-stroked-button [disabled]="!form.controls.companyId.value || saving"
+            (click)="showNewDivision = !showNewDivision">{{ showNewDivision ? 'Cancel' : 'Add Division' }}</button>
+        </div>
+        @if (showNewDivision) {
+          <div class="new-division-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>New division name</mat-label>
+              <input matInput [value]="newDivisionName" maxlength="150"
+                (input)="newDivisionName = $any($event.target).value" (keydown.enter)="$event.preventDefault(); createDivision()"
+                placeholder="e.g. Herbal & Ayurvedic Division">
+            </mat-form-field>
+            <button type="button" mat-flat-button color="primary" [disabled]="!newDivisionName.trim() || savingDivision"
+              (click)="createDivision()">{{ savingDivision ? 'Saving…' : 'Save Division' }}</button>
+          </div>
+        }
+        @if (categories.length) {
+          <div class="division-controls">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Category (optional)</mat-label>
+              <mat-select formControlName="categoryId">
+                <mat-option [value]="null">— No Category —</mat-option>
+                @for (category of categories; track category.id) {
+                  <mat-option [value]="category.id">{{ category.parentCategoryName ? category.parentCategoryName + ' / ' : '' }}{{ category.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <button type="button" mat-stroked-button (click)="showNewCategory = !showNewCategory">{{ showNewCategory ? 'Cancel' : 'Add Category' }}</button>
+          </div>
+        } @else {
+          <p class="category-hint">No categories yet. Add the first category below.</p>
+        }
+        @if (showNewCategory || !categories.length) {
+          <div class="new-category-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Category name</mat-label>
+              <input matInput [value]="newCategoryName" maxlength="150" (input)="newCategoryName = $any($event.target).value" (keydown.enter)="$event.preventDefault(); createCategory()" placeholder="e.g. Herbal & Nutraceuticals">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Parent category (optional)</mat-label>
+              <mat-select [(value)]="newCategoryParentId">
+                <mat-option [value]="0">Main category (no parent)</mat-option>
+                @for (category of categories; track category.id) {
+                  @if (!category.parentCategoryId) { <mat-option [value]="category.id">{{ category.name }}</mat-option> }
+                }
+              </mat-select>
+            </mat-form-field>
+            <p class="category-help">Leave this on “Main category” unless you want to add a subcategory.</p>
+            <button type="button" mat-flat-button color="primary" [disabled]="!newCategoryName.trim() || savingCategory || saving" (click)="createCategory()">{{ savingCategory ? 'Saving…' : (editing ? 'Save & Link' : 'Save Category') }}</button>
+            @if (!editing) { <p class="category-help">After saving, click Add Group to save the product group with this category.</p> }
+          </div>
+        }
+        <div class="actions">@if (editing) { <button type="button" mat-button (click)="cancel()">Cancel</button>
+          }<button mat-raised-button color="primary" [disabled]="form.invalid || saving">{{ editing ? 'Update' : 'Add
+            Group' }}</button></div>
+      </form>
+    </mat-card-content></mat-card>
+  <mat-card><mat-card-header><mat-card-title>All Product Groups</mat-card-title></mat-card-header><mat-card-content>
+      <mat-form-field appearance="outline" class="search-field"><mat-label>Search product groups</mat-label><input
+          matInput [formControl]="searchControl" placeholder="Search group, generic, company, category or variants"><mat-icon
+          matSuffix>search</mat-icon></mat-form-field>
+      <table mat-table [dataSource]="filteredGroups | slice:(pageIndex * pageSize):((pageIndex + 1) * pageSize)" multiTemplateDataRows><ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Group</th>
+          <td mat-cell *matCellDef="let g"><a class="group-name-link" [routerLink]="['/product-groups', g.id]">{{ g.name }}</a></td>
+        </ng-container><ng-container matColumnDef="generic">
+          <th mat-header-cell *matHeaderCellDef>Generic</th>
+          <td mat-cell *matCellDef="let g">{{ g.genericName || '—' }}</td>
+        </ng-container><ng-container matColumnDef="company">
+          <th mat-header-cell *matHeaderCellDef>Company</th>
+          <td mat-cell *matCellDef="let g">{{ g.companyName || '—' }}@if (g.companyDivisionName) {<br><small>{{ g.companyDivisionName }}</small>}</td>
+        </ng-container><ng-container matColumnDef="category">
+          <th mat-header-cell *matHeaderCellDef>Category</th>
+          <td mat-cell *matCellDef="let g">{{ g.parentCategoryName ? g.parentCategoryName + ' / ' : '' }}{{ g.categoryName || '—' }}</td>
+        </ng-container><ng-container matColumnDef="variants">
+          <th mat-header-cell *matHeaderCellDef>Variants</th>
+          <td mat-cell *matCellDef="let g">{{ g.variantCount }}</td>
+        </ng-container><ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let g"><button mat-icon-button color="primary" (click)="toggleVariants(g)"
+              [attr.aria-label]="expandedGroupId === g.id ? 'Hide variants' : 'Manage variants'"
+              [attr.aria-expanded]="expandedGroupId === g.id"><mat-icon>{{ expandedGroupId === g.id ? 'expand_less' :
+                'tune' }}</mat-icon></button><button mat-icon-button (click)="edit(g)"
+              aria-label="Edit"><mat-icon>edit</mat-icon></button><button mat-icon-button color="warn"
+              (click)="delete(g)" aria-label="Delete"><mat-icon>delete</mat-icon></button></td>
+        </ng-container><ng-container matColumnDef="variantsDetail">
+          <td mat-cell *matCellDef="let g" [attr.colspan]="columns.length" class="variants-detail-cell">
+            <div class="variants-detail" [class.variants-detail--open]="expandedGroupId === g.id">@if (expandedGroupId
+              === g.id) { <app-product-group-detail [groupId]="g.id" [embedded]="true" (closeSection)="closeVariants()"></app-product-group-detail> }
+            </div>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columns"></tr>
+        <tr mat-row *matRowDef="let row; columns: columns"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['variantsDetail']" class="variants-detail-row"
+          [class.variants-detail-row--open]="expandedGroupId === row.id"></tr>
+      </table>
+      <app-pagination [totalItems]="filteredGroups.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+      @if (!loading && !filteredGroups.length) { <p class="empty">No matching product groups found.</p> }
+    </mat-card-content></mat-card>
+</div>

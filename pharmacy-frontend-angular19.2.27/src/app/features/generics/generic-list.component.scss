@@ -1,0 +1,10 @@
+.page-header { margin-bottom: 24px; }
+.page-header h1 { margin: 0; font-weight: 500; }
+.page-header p { color: #666; margin: 6px 0 0; }
+.type-toggle { display: block; margin-bottom: 16px; }
+.generic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.generic-card { border: 1px solid #e5e5e5; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: inherit; transition: border-color .15s, box-shadow .15s; }
+.generic-card:hover { border-color: #3f51b5; box-shadow: 0 1px 6px rgba(63,81,181,.15); }
+.generic-card strong { font-size: 15px; }
+.generic-card .meta { color: #888; font-size: 12px; }
+.empty { padding: 24px; text-align: center; color: #777; }

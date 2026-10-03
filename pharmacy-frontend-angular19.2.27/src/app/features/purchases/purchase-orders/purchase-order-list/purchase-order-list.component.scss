@@ -1,0 +1,14 @@
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.page-header h1 { margin: 0; }
+.page-header p { color: #666; margin: 6px 0 0; }
+.table-wrap { overflow-x: auto; }
+.search-field { width: min(400px, 100%); }
+table { width: 100%; }
+.empty { padding: 24px; text-align: center; color: #777; }
+.badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; background: #eee; color: #555; }
+.status-0 { background: #ede7f6; color: #4527a0; }   // Draft
+.status-1 { background: #fff3e0; color: #e65100; }   // PendingCheck
+.status-2 { background: #e1f5fe; color: #0277bd; }   // Checked
+.status-3 { background: #e8f5e9; color: #2e7d32; }   // Converted
+.status-4 { background: #ffebee; color: #c62828; }   // Cancelled
+.photo-link { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }

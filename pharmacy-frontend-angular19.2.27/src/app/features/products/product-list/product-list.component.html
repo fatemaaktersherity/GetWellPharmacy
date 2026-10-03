@@ -1,0 +1,190 @@
+<div class="page-header">
+  <div>
+    <h1>Products</h1>
+    <p>Manage medicines and product stock.</p>
+  </div>
+  <a mat-raised-button color="primary" routerLink="/products/new">
+    <mat-icon>add</mat-icon> Add Product
+  </a>
+</div>
+
+<mat-card>
+  <mat-card-content>
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search products</mat-label>
+      <input matInput [formControl]="searchControl" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <div class="list-filters">
+      <mat-form-field appearance="outline"
+        ><mat-label>Stock status</mat-label
+        ><mat-select [formControl]="statusControl"
+          ><mat-option value="all">All products</mat-option
+          ><mat-option value="in-stock">In stock</mat-option
+          ><mat-option value="out">Out of stock</mat-option></mat-select
+        ></mat-form-field
+      >
+      <mat-form-field appearance="outline"
+        ><mat-label>Sort by</mat-label
+        ><mat-select [formControl]="sortControl"
+          ><mat-option value="name">Name</mat-option
+          ><mat-option value="stock-low">Stock: low first</mat-option
+          ><mat-option value="stock-high">Stock: high first</mat-option
+          ><mat-option value="price-low">Price: low first</mat-option
+          ><mat-option value="price-high"
+            >Price: high first</mat-option
+          ></mat-select
+        ></mat-form-field
+      >
+    </div>
+
+    <div class="table-wrap">
+      <table mat-table [dataSource]="pagedProducts">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Product</th>
+          <td mat-cell *matCellDef="let p">
+            <div class="product-cell">
+              @if (imageUrl(p.imagePath); as imageUrl) {
+                <a [href]="imageUrl" target="_blank" title="Open product image"
+                  ><img
+                    class="photo-thumb"
+                    [src]="imageUrl"
+                    [alt]="p.productName"
+                /></a>
+              } @else {
+                <div class="photo-placeholder">
+                  <mat-icon>medication</mat-icon>
+                </div>
+              }
+              <div>
+                <strong>{{ p.productName }}</strong>
+                <small
+                  >{{ p.strength
+                  }}{{ p.productCode ? " — " + p.productCode : ""
+                  }}{{ p.genericName ? " · " + p.genericName : "" }}</small
+                >
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="stock">
+          <th mat-header-cell *matHeaderCellDef>Stock</th>
+          <td mat-cell *matCellDef="let p">
+            <span [class.low-stock]="p.stockQuantity <= p.minStockQty">
+              {{ p.stockQuantity }}
+              @if (p.stockQuantity <= p.minStockQty) {
+                <mat-icon
+                  class="warn-icon"
+                  [matTooltip]="'Below minimum of ' + p.minStockQty"
+                  >warning</mat-icon
+                >
+              }
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="company">
+          <th mat-header-cell *matHeaderCellDef>Company</th>
+          <td mat-cell *matCellDef="let p">{{ p.companyName || "—" }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="price">
+          <th mat-header-cell *matHeaderCellDef>Sale Price</th>
+          <td mat-cell *matCellDef="let p">
+            {{
+              p.salePrice ?? p.unitPrice | currency: "BDT " : "symbol" : "1.0-2"
+            }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let p">
+            {{ p.stockQuantity > 0 ? "In Stock" : "Out of Stock" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let p">
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="edit(p.id)"
+              aria-label="Edit product"
+              title="Edit"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <a
+              mat-icon-button
+              [routerLink]="['/products', p.id]"
+              aria-label="View product details"
+              title="View details"
+              ><mat-icon>visibility</mat-icon></a
+            >
+            <a
+              mat-icon-button
+              [routerLink]="['/products', p.id, 'price-history']"
+              aria-label="View price history"
+              title="Price history"
+              ><mat-icon>history</mat-icon></a
+            >
+            <button
+              mat-icon-button
+              (click)="setActive(p, p.isActive === false)"
+              [attr.aria-label]="
+                p.isActive === false ? 'Activate product' : 'Archive product'
+              "
+              [title]="p.isActive === false ? 'Activate' : 'Archive'"
+            >
+              <mat-icon>{{
+                p.isActive === false ? "unarchive" : "archive"
+              }}</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="delete(p.id)"
+              aria-label="Permanently delete product"
+              title="Permanently delete (only if unused)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr
+          mat-header-row
+          *matHeaderRowDef="[
+            'name',
+            'company',
+            'stock',
+            'price',
+            'status',
+            'actions',
+          ]"
+        ></tr>
+        <tr
+          mat-row
+          *matRowDef="
+            let row;
+            columns: ['name', 'company', 'stock', 'price', 'status', 'actions']
+          "
+        ></tr>
+      </table>
+
+      @if (!filteredProducts.length) {
+        <div class="empty">No products match these filters.</div>
+      }
+      <app-pagination
+        [pageIndex]="page"
+        [pageSize]="pageSize"
+        [totalItems]="filteredProducts.length"
+        (pageIndexChange)="page = $event"
+        (pageSizeChange)="pageSize = $event"
+      />
+    </div>
+  </mat-card-content>
+</mat-card>

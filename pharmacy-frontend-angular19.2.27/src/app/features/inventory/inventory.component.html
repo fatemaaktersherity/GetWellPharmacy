@@ -1,0 +1,325 @@
+<div class="page-header">
+  <h1>Inventory / Stock</h1>
+  <p>Monitor current stock, warehouses, expired batches, and damaged products.</p>
+</div>
+
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Warehouse Filter</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="filter-bar">
+      <mat-form-field appearance="outline" class="warehouse-select">
+        <mat-label>Warehouse</mat-label>
+        <mat-select
+          [(value)]="selectedWarehouseId"
+          (selectionChange)="onWarehouseChange()"
+        >
+          <mat-option [value]="null">All Warehouses</mat-option>
+          @for (w of warehouses; track w.warehouseId) {
+            <mat-option [value]="w.warehouseId">{{
+              w.warehouseName
+            }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button mat-stroked-button (click)="refreshInventory()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<mat-tab-group [(selectedIndex)]="selectedTab">
+  <!-- Tab 1: Product Stocks (scoped by Warehouse Filter above) -->
+  <mat-tab label="Current Stocks">
+    <mat-card class="tab-card">
+      <mat-card-content class="table-wrap">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search stock</mat-label>
+          <input
+            matInput
+            [formControl]="searchControl"
+            placeholder="Search by product name or batch number"
+          />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <table mat-table [dataSource]="getPaginatedStocks()">
+          <ng-container matColumnDef="product">
+            <th mat-header-cell *matHeaderCellDef>Product</th>
+            <td mat-cell *matCellDef="let s">
+              @if (imageUrl(s.productImagePath); as imageUrl) {
+                <a [href]="imageUrl" target="_blank"
+                  ><img
+                    class="photo-thumb"
+                    [src]="imageUrl"
+                    alt="Product photo"
+                /></a>
+              }
+              {{ s.productName }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>Code</th>
+            <td mat-cell *matCellDef="let s">
+              {{ s.productCode || "-" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="warehouse">
+            <th mat-header-cell *matHeaderCellDef>Warehouse</th>
+            <td mat-cell *matCellDef="let s">
+              {{ s.warehouseName }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="batch">
+            <th mat-header-cell *matHeaderCellDef>Batch</th>
+            <td mat-cell *matCellDef="let s">
+              {{ s.batchNumber || "-" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="qty">
+            <th mat-header-cell *matHeaderCellDef>Available Qty</th>
+            <td mat-cell *matCellDef="let s">
+              {{ s.quantity }} {{ s.unitName }}
+              @if (s.receivedQuantity && s.receivedQuantity !== s.quantity) {
+                <small class="received-hint"
+                  >of {{ s.receivedQuantity }} received</small
+                >
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="cost">
+            <th mat-header-cell *matHeaderCellDef>Unit Cost</th>
+            <td mat-cell *matCellDef="let s">
+              {{ s.unitCost | currency: "BDT " : "symbol" : "1.0-2" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="expiry">
+            <th mat-header-cell *matHeaderCellDef>Expiry</th>
+            <td mat-cell *matCellDef="let s">
+              {{ s.expiryDate ? (s.expiryDate | date: "mediumDate") : "-" }}
+            </td>
+          </ng-container>
+          <tr
+            mat-header-row
+            *matHeaderRowDef="[
+              'product',
+              'code',
+              'warehouse',
+              'batch',
+              'qty',
+              'cost',
+              'expiry',
+            ]"
+          ></tr>
+          <tr
+            mat-row
+            *matRowDef="
+              let row;
+              columns: [
+                'product',
+                'code',
+                'warehouse',
+                'batch',
+                'qty',
+                'cost',
+                'expiry',
+              ]
+            "
+          ></tr>
+        </table>
+      </mat-card-content>
+      <mat-card-content>
+        <app-pagination
+          [pageIndex]="currentPage"
+          [pageSize]="pageSize"
+          [totalItems]="filteredStocks.length"
+          (pageIndexChange)="currentPage = $event"
+          (pageSizeChange)="pageSize = $event"
+        />
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+
+  <!-- Tab 2: All Products — totals across every warehouse, independent of
+       the Warehouse Filter above -->
+  <mat-tab label="All Products">
+    <mat-card class="tab-card">
+      <mat-card-content class="table-wrap">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search product</mat-label>
+          <input
+            matInput
+            [formControl]="productSearchControl"
+            placeholder="Search by product name or code, e.g. Napa"
+          />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <table mat-table [dataSource]="paginatedProductSummaries">
+          <ng-container matColumnDef="product">
+            <th mat-header-cell *matHeaderCellDef>Product</th>
+            <td mat-cell *matCellDef="let p">
+              @if (imageUrl(p.productImagePath); as imageUrl) {
+                <a [href]="imageUrl" target="_blank"
+                  ><img
+                    class="photo-thumb"
+                    [src]="imageUrl"
+                    alt="Product photo"
+                /></a>
+              }
+              {{ p.productName }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>Code</th>
+            <td mat-cell *matCellDef="let p">
+              {{ p.productCode || "-" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef>
+              Total Qty (all warehouses)
+            </th>
+            <td mat-cell *matCellDef="let p">
+              <strong>{{ p.totalQuantity }}</strong> {{ p.unitName }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="breakdown">
+            <th mat-header-cell *matHeaderCellDef>By Warehouse</th>
+            <td mat-cell *matCellDef="let p">
+              <span class="warehouse-breakdown">
+                @for (b of p.breakdown; track b.warehouseName) {
+                  <span class="wh-chip"
+                    >{{ b.warehouseName }}: {{ b.quantity }}</span
+                  >
+                }
+              </span>
+            </td>
+          </ng-container>
+
+          <tr
+            mat-header-row
+            *matHeaderRowDef="['product', 'code', 'total', 'breakdown']"
+          ></tr>
+          <tr
+            mat-row
+            *matRowDef="
+              let row;
+              columns: ['product', 'code', 'total', 'breakdown']
+            "
+          ></tr>
+        </table>
+        @if (!paginatedProductSummaries.length) {
+          <p class="empty-hint">No matching products found.</p>
+        }
+      </mat-card-content>
+      <mat-card-content>
+        <app-pagination
+          [pageIndex]="productCurrentPage"
+          [pageSize]="productPageSize"
+          [totalItems]="filteredProductSummaries.length"
+          (pageIndexChange)="productCurrentPage = $event"
+          (pageSizeChange)="productPageSize = $event"
+        />
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+
+  <!-- Tab 3: Expired Stocks -->
+  <mat-tab label="Expired Batches">
+    <mat-card class="tab-card">
+      <mat-card-content class="table-wrap">
+        <table mat-table [dataSource]="expiredStocks">
+          <ng-container matColumnDef="product">
+            <th mat-header-cell *matHeaderCellDef>Product</th>
+            <td mat-cell *matCellDef="let e">
+              {{ e.productName }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="batch">
+            <th mat-header-cell *matHeaderCellDef>Batch</th>
+            <td mat-cell *matCellDef="let e">
+              {{ e.batchNumber || "-" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="expiry">
+            <th mat-header-cell *matHeaderCellDef>Expiry Date</th>
+            <td mat-cell *matCellDef="let e">
+              {{ e.expiryDate | date: "mediumDate" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="qty">
+            <th mat-header-cell *matHeaderCellDef>Qty</th>
+            <td mat-cell *matCellDef="let e">{{ e.quantity }}</td>
+          </ng-container>
+          <ng-container matColumnDef="warehouse">
+            <th mat-header-cell *matHeaderCellDef>Warehouse</th>
+            <td mat-cell *matCellDef="let e">
+              {{ e.warehouseName }}
+            </td>
+          </ng-container>
+
+          <tr
+            mat-header-row
+            *matHeaderRowDef="[
+              'product',
+              'batch',
+              'expiry',
+              'qty',
+              'warehouse',
+            ]"
+          ></tr>
+          <tr
+            mat-row
+            *matRowDef="
+              let row;
+              columns: ['product', 'batch', 'expiry', 'qty', 'warehouse']
+            "
+          ></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+
+  <!-- Damaged quantities are listed as product records, not as entire batches. -->
+  <mat-tab label="Damaged Products">
+    <mat-card class="tab-card">
+      <mat-card-content class="table-wrap">
+        <table mat-table [dataSource]="filteredDamagedProducts">
+          <ng-container matColumnDef="product">
+            <th mat-header-cell *matHeaderCellDef>Product</th>
+            <td mat-cell *matCellDef="let d">{{ d.productName }}</td>
+          </ng-container>
+          <ng-container matColumnDef="batch">
+            <th mat-header-cell *matHeaderCellDef>Batch</th>
+            <td mat-cell *matCellDef="let d">{{ d.batchNumber || "-" }}</td>
+          </ng-container>
+          <ng-container matColumnDef="quantity">
+            <th mat-header-cell *matHeaderCellDef>Damaged Qty</th>
+            <td mat-cell *matCellDef="let d">{{ d.quantity }}</td>
+          </ng-container>
+          <ng-container matColumnDef="warehouse">
+            <th mat-header-cell *matHeaderCellDef>Warehouse</th>
+            <td mat-cell *matCellDef="let d">{{ d.warehouseName }}</td>
+          </ng-container>
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let d">
+              {{ d.approvalStatus === "PendingApproval" ? "Pending Approval" : d.approvalStatus }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Reported</th>
+            <td mat-cell *matCellDef="let d">{{ d.disposalDate | date: "mediumDate" }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['product', 'batch', 'quantity', 'warehouse', 'status', 'date']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['product', 'batch', 'quantity', 'warehouse', 'status', 'date']"></tr>
+        </table>
+        @if (!filteredDamagedProducts.length) {
+          <p class="empty-hint">No damaged products recorded for this warehouse.</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+</mat-tab-group>

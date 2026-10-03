@@ -1,0 +1,102 @@
+<div class="page-header">
+    <div>
+        <h1>Doctors</h1>
+        <p>Referring doctors and their prescription history.</p>
+    </div>
+</div>
+
+<div class="content-grid">
+    <mat-card>
+        <mat-card-header><mat-card-title>{{ editingDoctor ? 'Edit Doctor' : 'Add Doctor'
+                }}</mat-card-title></mat-card-header>
+        <mat-card-content>
+            <form [formGroup]="form" (ngSubmit)="save()">
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="name" placeholder="e.g. Dr. Rahim Ahmed">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Specialization</mat-label>
+                    <input matInput formControlName="specialization" placeholder="e.g. Cardiologist">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Registration No</mat-label>
+                    <input matInput formControlName="registrationNo">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Hospital / Chamber</mat-label>
+                    <input matInput formControlName="hospital">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Phone</mat-label>
+                    <input matInput formControlName="phone">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Email</mat-label>
+                    <input matInput type="email" formControlName="email">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Address</mat-label>
+                    <textarea matInput formControlName="address" rows="2"></textarea>
+                </mat-form-field>
+                <mat-checkbox formControlName="isActive">Active</mat-checkbox>
+                <div class="actions">
+                    @if (editingDoctor) { <button type="button" mat-button (click)="cancelEdit()">Cancel</button> }
+                    <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid || saving">{{
+                        editingDoctor ? 'Update Doctor' : 'Add Doctor' }}</button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+        <mat-card-header><mat-card-title>All Doctors</mat-card-title></mat-card-header>
+        <mat-card-content>
+            <mat-form-field appearance="outline" class="search-field">
+                <mat-label>Search doctors</mat-label>
+                <input matInput [formControl]="searchControl" placeholder="Search name, specialization, hospital">
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+            <table mat-table [dataSource]="filteredDoctors | slice:(pageIndex * pageSize):((pageIndex + 1) * pageSize)">
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef>Name</th>
+                    <td mat-cell *matCellDef="let d">{{ d.name }}</td>
+                </ng-container>
+                <ng-container matColumnDef="specialization">
+                    <th mat-header-cell *matHeaderCellDef>Specialization</th>
+                    <td mat-cell *matCellDef="let d">{{ d.specialization || '-' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="hospital">
+                    <th mat-header-cell *matHeaderCellDef>Hospital</th>
+                    <td mat-cell *matCellDef="let d">{{ d.hospital || '-' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="phone">
+                    <th mat-header-cell *matHeaderCellDef>Phone</th>
+                    <td mat-cell *matCellDef="let d">{{ d.phone || '-' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="prescriptions">
+                    <th mat-header-cell *matHeaderCellDef>Prescriptions</th>
+                    <td mat-cell *matCellDef="let d"><a [routerLink]="['/prescriptions']"
+                            [queryParams]="{ doctorId: d.doctorId }">{{ d.prescriptionCount }}</a></td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let d">{{ d.isActive ? 'Active' : 'Inactive' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let d">
+                        <button type="button" mat-icon-button color="primary" (click)="edit(d)"
+                            aria-label="Edit doctor"><mat-icon>edit</mat-icon></button>
+                        <button type="button" mat-icon-button color="warn" (click)="delete(d)"
+                            aria-label="Delete doctor"><mat-icon>delete</mat-icon></button>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="columns"></tr>
+                <tr mat-row *matRowDef="let row; columns: columns"></tr>
+            </table>
+            <app-pagination [totalItems]="filteredDoctors.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+            @if (!filteredDoctors.length) { <p class="empty">No matching doctors found.</p> }
+        </mat-card-content>
+    </mat-card>
+</div>

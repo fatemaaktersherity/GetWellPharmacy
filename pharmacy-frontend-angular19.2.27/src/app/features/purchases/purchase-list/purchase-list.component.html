@@ -1,0 +1,131 @@
+<div class="page-header">
+  <div>
+    <h1>Purchase Invoices</h1>
+    <p>Supplier purchases and payment status.</p>
+  </div>
+  <a mat-raised-button color="primary" routerLink="/purchases/new"><mat-icon>add</mat-icon> New Purchase</a>
+</div>
+<mat-card><mat-card-content class="table-wrap">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search purchases</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="Search invoice, supplier, amount or status" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <table mat-table [dataSource]="filteredPurchases | slice:(pageIndex * pageSize):((pageIndex + 1) * pageSize)">
+      <ng-container matColumnDef="invoiceNo">
+        <th mat-header-cell *matHeaderCellDef>Invoice</th>
+        <td mat-cell *matCellDef="let p">{{ p.invoiceNo }}</td>
+      </ng-container>
+      <ng-container matColumnDef="purchaseOrder">
+        <th mat-header-cell *matHeaderCellDef>Purchase Order</th>
+        <td mat-cell *matCellDef="let p">{{ p.purchaseOrderNo || "-" }}</td>
+      </ng-container>
+      <ng-container matColumnDef="supplier">
+        <th mat-header-cell *matHeaderCellDef>Supplier</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.supplierName || p.supplierId }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="supplierType">
+        <th mat-header-cell *matHeaderCellDef>Supplier Type</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.supplierTypeName || "-" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Invoice Date</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.purchaseDate | date: "mediumDate" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="orderedQty">
+        <th mat-header-cell *matHeaderCellDef>Ordered Qty</th>
+        <td mat-cell *matCellDef="let p">{{ p.orderedQty ?? "-" }}</td>
+      </ng-container>
+      <ng-container matColumnDef="receivedQty">
+        <th mat-header-cell *matHeaderCellDef>Received Qty</th>
+        <td mat-cell *matCellDef="let p">
+          <span [class.short-received]="
+              p.orderedQty !== null && p.receivedQty < p.orderedQty
+            ">{{ p.receivedQty }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="receivingStatus">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let p">
+          <span class="badge" [class.unpaid]="p.receivingStatus === 'Partially Received'">{{ p.receivingStatus || "-" }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="total">
+        <th mat-header-cell *matHeaderCellDef>Total</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.total | currency: "BDT " : "symbol" : "1.0-2" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="paymentMethod">
+        <th mat-header-cell *matHeaderCellDef>Payment Method</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.paymentMethods?.join(", ") || p.paymentMethod?.split(",")?.join(", ") || "-" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="advance">
+        <th mat-header-cell *matHeaderCellDef>Advance</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.advance | currency: "BDT " : "symbol" : "1.0-2" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="due">
+        <th mat-header-cell *matHeaderCellDef>Due</th>
+        <td mat-cell *matCellDef="let p">
+          <span [class.due-warning]="p.due > 0">{{
+            p.due | currency: "BDT " : "symbol" : "1.0-2"
+            }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Payment Status</th>
+        <td mat-cell *matCellDef="let p">
+          <mat-checkbox [checked]="p.isPaymentComplete" disabled>
+            {{ p.isPaymentComplete ? "Complete" : "Incomplete" }}
+          </mat-checkbox>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="receipt">
+        <th mat-header-cell *matHeaderCellDef>Receipt</th>
+        <td mat-cell *matCellDef="let p">
+          @if (receiptUrl(p.receiptImagePath); as receiptUrl) {
+          <a class="photo-link" [href]="receiptUrl" target="_blank"><mat-icon>image</mat-icon> View</a>
+          }
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let p">
+          <button mat-icon-button (click)="view(p.id)" aria-label="View purchase" title="View purchase">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button mat-icon-button (click)="print(p)" aria-label="Print purchase" title="Print purchase">
+            <mat-icon>print</mat-icon>
+          </button>
+          @if (p.due > 0) {
+          <button mat-stroked-button color="primary" (click)="payDue(p.id)" title="Record supplier payment">
+            <mat-icon>payments</mat-icon> Pay Due
+          </button>
+          }
+          <button mat-icon-button (click)="editPurchase(p.id)" aria-label="Edit purchase" title="Edit">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="delete(p.id)" aria-label="Delete purchase" title="Delete">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+    <app-pagination [totalItems]="filteredPurchases.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+    @if (!filteredPurchases.length) {
+    <div class="empty">No matching purchase invoices found.</div>
+    }
+  </mat-card-content></mat-card>

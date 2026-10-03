@@ -1,0 +1,19 @@
+.page-header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.header-actions a { position: relative; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: #c62828;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+.search-field { width: min(400px, 100%); }
+.empty { margin: 0; padding: 48px 16px; color: #777; text-align: center; }

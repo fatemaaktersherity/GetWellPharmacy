@@ -1,0 +1,70 @@
+<h2 mat-dialog-title>
+  {{ data.genericName }}
+  <span class="subtitle">Available Brands</span>
+</h2>
+
+<mat-dialog-content>
+  <div class="toolbar">
+    <div class="filters">
+      <mat-form-field appearance="outline">
+        <mat-label>Company</mat-label>
+        <mat-select [ngModel]="companyFilter()" (ngModelChange)="companyFilter.set($event)">
+          <mat-option [value]="null">All companies</mat-option>
+          @for (c of companies(); track c) { <mat-option [value]="c">{{ c }}</mat-option> }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Strength</mat-label>
+        <mat-select [ngModel]="strengthFilter()" (ngModelChange)="strengthFilter.set($event)">
+          <mat-option [value]="null">All strengths</mat-option>
+          @for (s of strengths(); track s) { <mat-option [value]="s">{{ s }}</mat-option> }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Dosage form</mat-label>
+        <mat-select [ngModel]="dosageFormFilter()" (ngModelChange)="dosageFormFilter.set($event)">
+          <mat-option [value]="null">All dosage forms</mat-option>
+          @for (d of dosageForms(); track d) { <mat-option [value]="d">{{ d }}</mat-option> }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-button-toggle-group class="sort-toggle" [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)">
+      <mat-button-toggle value="name">Name</mat-button-toggle>
+      <mat-button-toggle value="price">Price</mat-button-toggle>
+      <mat-button-toggle value="popularity">Popularity</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <div class="table-wrap">
+    <table class="brands-table">
+      <thead>
+        <tr><th>Brand Name</th><th>Dosage Form</th><th>Strength</th><th>Company</th><th>Pack Size &amp; Price</th><th>In Stock</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.productId) {
+          <tr>
+            <td><strong>{{ row.productName }}</strong></td>
+            <td>{{ row.dosageFormName || '—' }}</td>
+            <td>{{ row.strength }}</td>
+            <td>{{ row.companyName || 'Unknown company' }}</td>
+            <td>
+              {{ row.salePrice | currency:'BDT ' }} / {{ row.unitName }}
+              @if (packSummary(row); as pack) { <span class="pack-note">({{ pack }})</span> }
+            </td>
+            <td>{{ row.availableQuantity }} {{ row.unitName }}</td>
+            <td><button mat-stroked-button color="primary" (click)="select(row)">Select</button></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="empty">No brands match these filters.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Close</button>
+</mat-dialog-actions>

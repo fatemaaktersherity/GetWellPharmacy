@@ -1,0 +1,93 @@
+<mat-card>
+  <div class="header-row">
+    <h2>Purchase Requirements (Low Stock)</h2>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="generate()"
+      [disabled]="generating"
+    >
+      <mat-icon>refresh</mat-icon>
+      {{ generating ? "Checking stock…" : "Generate from Low Stock" }}
+    </button>
+  </div>
+
+  <table mat-table [dataSource]="rows" class="mat-elevation-z1">
+    <ng-container matColumnDef="select">
+      <th mat-header-cell *matHeaderCellDef>
+        <mat-checkbox
+          [checked]="allSelected"
+          (change)="toggleAll($event.checked)"
+        ></mat-checkbox>
+      </th>
+      <td mat-cell *matCellDef="let row">
+        <mat-checkbox
+          [checked]="isSelected(row.serialNo)"
+          (change)="toggle(row.serialNo, $event.checked)"
+        ></mat-checkbox>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="productName">
+      <th mat-header-cell *matHeaderCellDef>Product</th>
+      <td mat-cell *matCellDef="let row">{{ row.productName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="unitName">
+      <th mat-header-cell *matHeaderCellDef>Unit</th>
+      <td mat-cell *matCellDef="let row">{{ row.unitName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="stockQty">
+      <th mat-header-cell *matHeaderCellDef>Current Stock</th>
+      <td mat-cell *matCellDef="let row">
+        {{ row.stockQty | number: "1.0-2" }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="requiredQty">
+      <th mat-header-cell *matHeaderCellDef>Required Qty</th>
+      <td mat-cell *matCellDef="let row">
+        {{ row.requiredQty | number: "1.0-2" }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="lastPurchaseRate">
+      <th mat-header-cell *matHeaderCellDef>Last Purchase Rate</th>
+      <td mat-cell *matCellDef="let row">
+        {{ row.lastPurchaseRate | number: "1.2-2" }}
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="cols"></tr>
+    <tr mat-row *matRowDef="let row; columns: cols"></tr>
+  </table>
+
+  <p *ngIf="rows.length === 0" class="empty-state">
+    Kono low-stock product nai. "Generate from Low Stock" e click korun.
+  </p>
+
+  <div class="convert-row" *ngIf="rows.length > 0">
+    <mat-form-field appearance="outline">
+      <mat-label>Supplier</mat-label>
+      <mat-select [formControl]="supplierControl">
+        <mat-option *ngFor="let s of suppliers" [value]="s.supplierId">
+          {{ s.supplierName
+          }}{{ s.contactPerson ? " (" + s.contactPerson + ")" : "" }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button
+      mat-raised-button
+      color="accent"
+      (click)="convertToOrder()"
+      [disabled]="converting"
+    >
+      <mat-icon>assignment_turned_in</mat-icon>
+      {{
+        converting ? "Creating order…" : "Convert Selected to Purchase Order"
+      }}
+    </button>
+  </div>
+</mat-card>

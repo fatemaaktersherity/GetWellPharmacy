@@ -1,0 +1,330 @@
+<div class="page-header">
+  <div>
+    <h1>{{ isEditMode ? "Edit Product" : "Add Product" }}</h1>
+    <p>
+      {{ isEditMode ? "Update product details." : "Create a new product." }}
+    </p>
+  </div>
+  <a mat-stroked-button routerLink="/products"><mat-icon>arrow_back</mat-icon> Back</a>
+</div>
+
+<mat-card class="form-card">
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Product Code</mat-label>
+          <input matInput formControlName="productCode" placeholder="Leave blank to auto-generate" />
+          <mat-hint>Optional — auto-generated if left blank</mat-hint>
+        </mat-form-field>
+
+        <div class="full-width image-picker">
+          <label for="product-image">Product Photo</label>
+          <input id="product-image" type="file" accept="image/*" (change)="onImageSelected($event)" />
+          @if (imagePreview) {
+          <img [src]="imagePreview" alt="Product preview" />
+          }
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Product Name *</mat-label>
+          <input matInput formControlName="productName" required />
+          @if (form.get("productName")?.hasError("required")) {
+          <mat-error>Product name is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Product Group</mat-label>
+          <mat-select formControlName="productGroupId" (selectionChange)="onProductGroupChanged($event.value)">
+            <mat-option [value]="null">— No group / manual product —</mat-option>
+            @for (group of productGroups; track group.id) {
+            <mat-option [value]="group.id">{{ group.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Product Variant</mat-label>
+          <mat-select formControlName="productVariantId" [disabled]="!form.get('productGroupId')?.value"
+            (selectionChange)="onProductVariantChanged($event.value)">
+            <mat-option [value]="null">— Select variant —</mat-option>
+            @for (variant of variants; track variant.id) {
+            <mat-option [value]="variant.id">{{ variant.strength }} ·
+              {{ variant.dosageFormName }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Selecting a variant fills strength and dosage form.</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Product Category</mat-label>
+            <mat-select formControlName="productCategoryId">
+              <mat-option [value]="null">— Use product group category —</mat-option>
+            @for (category of categories; track category.id) {
+              <mat-option [value]="category.id">{{ category.parentCategoryName ? category.parentCategoryName + ' / ' : '' }}{{ category.name }}</mat-option>
+            }
+          </mat-select>
+            <mat-hint>Choose a category for this product, including products without a product group.</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Brand Type *</mat-label>
+          <mat-select formControlName="brandType" required>
+            <mat-option value="Allopathic">Allopathic</mat-option>
+            <mat-option value="Herbal">Herbal</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Strength *</mat-label>
+          <input matInput formControlName="strength" required [readonly]="!!form.get('productVariantId')?.value" />
+          @if (form.get("strength")?.hasError("required")) {
+          <mat-error>Strength is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Generic Name</mat-label>
+          <input matInput formControlName="genericName" placeholder="e.g. Paracetamol" />
+          <mat-hint>Used to find this brand from the Brand Search page</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Company</mat-label>
+          <mat-select formControlName="companyId">
+            <mat-option [value]="null">— None —</mat-option>
+            @for (c of companies; track c.id) {
+            <mat-option [value]="c.id">{{ c.name }}</mat-option>
+            }
+          </mat-select>
+          <button mat-icon-button matSuffix type="button" (click)="addNewCompany()" title="Add new company">
+            <mat-icon>add</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Dosage Form</mat-label>
+          <mat-select formControlName="dosageFormId">
+            <mat-option [value]="null">— None —</mat-option>
+            @for (d of dosageForms; track d.id) {
+            <mat-option [value]="d.id">{{ d.name }}</mat-option>
+            }
+          </mat-select>
+          <button mat-icon-button matSuffix type="button" (click)="addNewDosageForm()" title="Add new dosage form">
+            <mat-icon>add</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Unit *</mat-label>
+          <mat-select formControlName="unitId" required>
+            @for (u of units; track u.unitId) {
+            <mat-option [value]="u.unitId">{{ u.unitName }}</mat-option>
+            }
+          </mat-select>
+          @if (form.get("unitId")?.hasError("required")) {
+          <mat-error>Unit is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Unit Price (BDT) *</mat-label>
+          <input matInput type="number" min="0" formControlName="unitPrice" required />
+          @if (form.get("unitPrice")?.hasError("required")) {
+          <mat-error>Unit price is required</mat-error>
+          }
+          @if (form.get("unitPrice")?.hasError("min")) {
+          <mat-error>Unit price must be ≥ 0</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Purchase Price (BDT) *</mat-label>
+          <input matInput type="number" min="0" formControlName="purchasePrice" required />
+          @if (form.get("purchasePrice")?.hasError("required")) {
+          <mat-error>Purchase price is required</mat-error>
+          }
+          @if (form.get("purchasePrice")?.hasError("min")) {
+          <mat-error>Purchase price must be ≥ 0</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Distributor Price (BDT)</mat-label>
+          <input matInput type="number" min="0" formControlName="distributorPrice" />
+          <mat-hint>Optional base cost — leave blank to keep packaging Distributor Price fully manual</mat-hint>
+          @if (form.get("distributorPrice")?.hasError("min")) {
+          <mat-error>Distributor price must be ≥ 0</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Sale Price (BDT)</mat-label>
+          <input matInput type="number" min="0" formControlName="salePrice" />
+          @if (form.get("salePrice")?.hasError("min")) {
+          <mat-error>Sale price must be ≥ 0</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Min Stock Qty *</mat-label>
+          <input matInput type="number" min="0" formControlName="minStockQty" required />
+          @if (form.get("minStockQty")?.hasError("required")) {
+          <mat-error>Min stock qty is required</mat-error>
+          }
+          @if (form.get("minStockQty")?.hasError("min")) {
+          <mat-error>Min stock must be ≥ 0</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Max Stock Qty *</mat-label>
+          <input matInput type="number" min="0" formControlName="maxStockQty" required />
+          @if (form.get("maxStockQty")?.hasError("required")) {
+          <mat-error>Max stock qty is required</mat-error>
+          }
+          @if (form.get("maxStockQty")?.hasError("min")) {
+          <mat-error>Max stock must be ≥ 0</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="full-width">
+          <mat-checkbox formControlName="requiresPrescription">
+            Requires Prescription
+          </mat-checkbox>
+        </div>
+      </div>
+
+      <section class="packaging-section" formArrayName="prices">
+        <div class="section-title">
+          <div>
+            <h2>Unit Pricing</h2>
+            <p>
+              Prices for this medicine across its different sellable units
+              (e.g. Pcs, Strip, Box). Use a display name such as
+              "60 ml bottle (Raspberry)" so the price is shown exactly as
+              entered.
+            </p>
+          </div>
+          <button type="button" mat-stroked-button (click)="addPackaging()">
+            <mat-icon>add</mat-icon> Add Packaging
+          </button>
+        </div>
+        @for (packaging of packagings.controls; track $index; let i = $index) {
+        <div class="packaging-row" [formGroupName]="i">
+          <mat-form-field appearance="outline"><mat-label>Packaging Unit</mat-label><mat-select
+              formControlName="unitId">
+              @for (u of units; track u.unitId) {
+              <mat-option [value]="u.unitId">{{ u.unitName }}</mat-option>
+              }
+            </mat-select></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Display Name</mat-label><input matInput
+              formControlName="displayName" placeholder="e.g. 60 ml bottle (Raspberry)" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Package Price (BDT)</mat-label><input matInput type="number"
+              min="0" formControlName="perUnitPrice" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Base Quantity</mat-label><input matInput type="number"
+              min="0.0001" step="0.0001" formControlName="baseQuantity" /><mat-hint>Number of
+              {{
+              form.get("unitId")?.value ? "base units" : "items"
+              }}</mat-hint></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Purchase Price</mat-label><input matInput type="number"
+              min="0" formControlName="purchasePrice" /><mat-hint>Cost for this unit — independent from Package
+              Price</mat-hint></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Sale Price</mat-label><input matInput type="number" min="0"
+              formControlName="salePrice" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Distributor Price</mat-label><input matInput type="number"
+              min="0" formControlName="distributorPrice" />
+            @if (packaging.get("distributorPrice")?.hasError("distributorPriceMismatch")) {
+            <mat-error>Fill this, or clear the product's Distributor Price
+              above.</mat-error>
+            }
+          </mat-form-field>
+          <button type="button" mat-icon-button color="warn" (click)="removePackaging(i)" aria-label="Remove packaging">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+        } @empty {
+        <p class="hint">
+          No alternate packaging added. The selected product unit remains the
+          base unit.
+        </p>
+        }
+      </section>
+
+      <section class="details-section" [formGroup]="detailsGroup">
+        <div class="section-title">
+          <div>
+            <h2>Medicine Details</h2>
+            <p>
+              Pharmacology and regulatory information shown on this
+              product's detail page — visible from the eye icon on the
+              All Products list.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <mat-form-field appearance="outline" class="full-width details-wide">
+            <mat-label>Description</mat-label>
+            <textarea matInput rows="3" formControlName="description"
+              placeholder="Short overview of what this medicine is used for"></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Schedule</mat-label>
+            <input matInput formControlName="schedule" placeholder="e.g. POM, OTC" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>DAR No.</mat-label>
+            <input matInput formControlName="darNo" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Pregnancy Category</mat-label>
+            <input matInput formControlName="pregnancyCategory" placeholder="e.g. A, B, C, D, X" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Storage Conditions</mat-label>
+            <input matInput formControlName="storageConditions" placeholder="e.g. Store in a cool, dry place" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Min. Storage Temp (°C)</mat-label>
+            <input matInput type="number" formControlName="temperatureMin" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Max. Storage Temp (°C)</mat-label>
+            <input matInput type="number" formControlName="temperatureMax" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width details-wide">
+            <mat-label>Composition</mat-label>
+            <textarea matInput rows="2" formControlName="composition"></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width details-wide">
+            <mat-label>Side Effects</mat-label>
+            <textarea matInput rows="2" formControlName="sideEffects"></textarea>
+          </mat-form-field>
+
+          <div class="full-width">
+            <mat-checkbox formControlName="isControlledDrug">
+              Controlled Drug
+            </mat-checkbox>
+          </div>
+        </div>
+      </section>
+
+      <div class="button-group">
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+          {{ loading ? "Saving..." : isEditMode ? "Update Product" : "Add Product" }}
+        </button>
+        <a mat-stroked-button routerLink="/products">Cancel</a>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

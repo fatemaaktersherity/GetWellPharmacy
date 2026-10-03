@@ -1,0 +1,78 @@
+<div class="page-header">
+  <h1>Warehouses</h1>
+  <a mat-raised-button color="primary" routerLink="/warehouses/new">
+    <mat-icon>add</mat-icon> New Warehouse
+  </a>
+</div>
+
+<mat-card>
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-label>Search warehouses</mat-label>
+    <input
+      matInput
+      [formControl]="searchControl"
+      placeholder="Search name, type, address"
+    />
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+
+  <table mat-table [dataSource]="filteredWarehouses | slice:(pageIndex * pageSize):((pageIndex + 1) * pageSize)">
+    <ng-container matColumnDef="photo">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let w">
+        <img *ngIf="photoUrl(w)" [src]="photoUrl(w)" class="thumb" alt="" />
+        <mat-icon *ngIf="!photoUrl(w)">warehouse</mat-icon>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let w">{{ w.name }}</td>
+    </ng-container>
+    <ng-container matColumnDef="type">
+      <th mat-header-cell *matHeaderCellDef>Type</th>
+      <td mat-cell *matCellDef="let w">{{ w.warehouseTypeName }}</td>
+    </ng-container>
+    <ng-container matColumnDef="address">
+      <th mat-header-cell *matHeaderCellDef>Address</th>
+      <td mat-cell *matCellDef="let w">{{ w.address || "-" }}</td>
+    </ng-container>
+    <ng-container matColumnDef="capacity">
+      <th mat-header-cell *matHeaderCellDef>Capacity</th>
+      <td mat-cell *matCellDef="let w">{{ w.capacity }}</td>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let w">
+        {{ w.isActive ? "Active" : "Inactive" }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let w">
+        <a
+          mat-icon-button
+          [routerLink]="['/warehouses', w.id]"
+          aria-label="View details"
+          ><mat-icon>visibility</mat-icon></a
+        >
+        <a
+          mat-icon-button
+          [routerLink]="['/warehouses/edit', w.id]"
+          aria-label="Edit"
+          ><mat-icon>edit</mat-icon></a
+        >
+        <button
+          mat-icon-button
+          color="warn"
+          (click)="delete(w.id)"
+          aria-label="Delete"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="cols"></tr>
+    <tr mat-row *matRowDef="let row; columns: cols"></tr>
+  </table>
+  <app-pagination [totalItems]="filteredWarehouses.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+</mat-card>

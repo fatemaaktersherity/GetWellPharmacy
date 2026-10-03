@@ -1,0 +1,156 @@
+<div class="page-header">
+  <div>
+    <h1>{{ id ? "Edit Purchase Order" : "New Purchase Order" }}</h1>
+  </div>
+  <a mat-stroked-button routerLink="/purchase-orders"><mat-icon>arrow_back</mat-icon> Back</a>
+</div>
+
+<mat-card><mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+      <section class="order-info">
+        <mat-form-field appearance="outline">
+          <mat-label>Order No</mat-label>
+          <input matInput formControlName="orderNo" placeholder="Leave blank to auto-generate" />
+          <mat-hint>Optional — auto-generated if left blank</mat-hint>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Order Date</mat-label>
+          <input matInput type="date" formControlName="orderDate" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Required By</mat-label>
+          <input matInput type="date" formControlName="requirementDate" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Supplier</mat-label>
+          <mat-select formControlName="supplierId">
+            @for (s of suppliers; track s.supplierId) {
+            <mat-option [value]="s.supplierId">{{
+              s.supplierName
+              }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (selectedSupplier) {
+        <div class="supplier-contact-info">
+          <span><strong>Contact Person:</strong>
+            {{ selectedSupplier.contactPerson || "-" }}</span>
+          <span><strong>Contact No:</strong>
+            {{ selectedSupplier.phone || "-" }}</span>
+        </div>
+        }
+
+        <mat-form-field appearance="outline">
+          <mat-label>Supplier Type</mat-label>
+          <mat-select formControlName="supplierTypeId">
+            @for (t of supplierTypes; track t.id) {
+            <mat-option [value]="t.id">{{ t.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Source</mat-label>
+          <mat-select formControlName="source">
+            @for (s of sources; track s; let i = $index) {
+            <mat-option [value]="i">{{ s }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          @if (form.get('status')?.value === 3) {
+          <input matInput value="Converted" readonly />
+          } @else {
+          <mat-select formControlName="status">
+            @for (s of statuses; track s.value) {
+            <mat-option [value]="s.value">{{ s.label }}</mat-option>
+            }
+          </mat-select>
+          }
+        </mat-form-field>
+        <mat-checkbox formControlName="isUrgent">Urgent</mat-checkbox>
+        <div class="receipt-picker">
+          <label>Receipt / Reference Image</label>
+          <input type="file" accept="image/*" (change)="selectReceipt($event)" />
+          @if (receiptPreview) {
+          <a [href]="receiptPreview" target="_blank"><img class="photo-thumb" [src]="receiptPreview"
+              alt="Receipt preview" /></a>
+          }
+        </div>
+      </section>
+
+      <section formArrayName="items" class="items">
+        <h3>
+          Items
+          <button type="button" mat-icon-button (click)="addItem()">
+            <mat-icon>add</mat-icon>
+          </button>
+        </h3>
+        <p class="stock-filter-hint">You can order any product, including products that are currently in stock.</p>
+        @for (item of items.controls; track $index; let i = $index) {
+        <div [formGroupName]="i" class="line">
+          <mat-form-field><mat-label>Product</mat-label>
+            <mat-select formControlName="productId">
+              @for (p of products; track p.id) {
+              <mat-option [value]="p.id">{{ p.productName }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field><mat-label>Unit</mat-label>
+            <mat-select formControlName="unitId">
+              @for (u of units; track u.unitId) {
+              <mat-option [value]="u.unitId">{{ u.unitName }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field><mat-label>Last Purchase Price</mat-label><input matInput type="number" min="0"
+              formControlName="lastPurchasePrice" /></mat-form-field>
+          <mat-form-field><mat-label>Current Stock Qty</mat-label><input matInput type="number" min="0"
+              formControlName="stockQty" /></mat-form-field>
+          <mat-form-field><mat-label>Required Qty</mat-label><input matInput type="number" min="0"
+              formControlName="requiredQty" /></mat-form-field>
+          <mat-form-field><mat-label>Order Qty</mat-label><input matInput type="number" min="0"
+              formControlName="orderQty" /></mat-form-field>
+          <mat-checkbox formControlName="isCancelled">Cancelled</mat-checkbox>
+          <button type="button" mat-icon-button color="warn" (click)="removeItem(i)">
+            <mat-icon>delete</mat-icon>
+          </button>
+          <div class="price-hint">Auto-filled from supplier history/pricing; editable if needed.</div>
+          @if (item.get("maxStockQty")?.value !== null) {
+          <div class="stock-limit-hint" [class.over]="item.hasError('exceedsMax')">
+            <mat-icon inline>info</mat-icon>
+            <span>
+              Min stock: <strong>{{ item.get("minStockQty")?.value }}</strong>
+              · Max stock: <strong>{{ item.get("maxStockQty")?.value }}</strong>
+              @if (item.get("productUnitName")?.value) {
+              {{ item.get("productUnitName")?.value }}
+              }
+              · Current stock: <strong>{{ item.get("stockQty")?.value || 0 }}</strong>
+              @if (item.hasError("exceedsMax")) {
+              — Order Qty is too high. You can order at most
+              <strong>{{ item.errors?.["exceedsMax"].allowed }}</strong>
+              (max stock − current stock).
+              } @else {
+              — you cannot order above the max stock.
+              }
+            </span>
+          </div>
+          }
+        </div>
+        }
+      </section>
+
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="saving">
+          Save Purchase Order
+        </button>
+        <button mat-stroked-button type="button" (click)="printOrder()" [disabled]="saving">
+          <mat-icon>print</mat-icon> Print
+        </button>
+        <a mat-button routerLink="/purchase-orders">Cancel</a>
+      </div>
+    </form>
+  </mat-card-content></mat-card>

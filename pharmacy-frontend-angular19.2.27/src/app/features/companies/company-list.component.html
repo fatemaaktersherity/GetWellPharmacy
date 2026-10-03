@@ -1,0 +1,198 @@
+<div class="page-header">
+  <div>
+    <h1>Companies</h1>
+    <p>
+      Manufacturers / pharmaceutical companies used across products and the
+      Brand Search filter.
+    </p>
+  </div>
+  <a mat-stroked-button routerLink="/brands/search">
+    <mat-icon>search</mat-icon> Brand Search
+  </a>
+</div>
+
+<div class="content-grid">
+  <mat-card>
+    <mat-card-header
+      ><mat-card-title>{{
+        editingCompany ? "Edit Company" : "Add Company"
+      }}</mat-card-title></mat-card-header
+    >
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Company name</mat-label>
+          <input
+            matInput
+            formControlName="name"
+            maxlength="150"
+            autocomplete="off"
+            placeholder="e.g. Square Pharmaceuticals Ltd."
+          />
+          @if (form.controls.name.hasError("required")) {
+            <mat-error>Company name is required.</mat-error>
+          }
+          @if (form.controls.name.hasError("maxlength")) {
+            <mat-error>Company name can be up to 150 characters.</mat-error>
+          }
+        </mat-form-field>
+        <mat-checkbox formControlName="isActive">Active</mat-checkbox>
+        <div class="actions">
+          @if (editingCompany) {
+            <button type="button" mat-button (click)="cancelEdit()">
+              Cancel
+            </button>
+          }
+          <button
+            type="submit"
+            mat-raised-button
+            color="primary"
+            [disabled]="form.invalid || saving"
+          >
+            {{
+              editingCompany
+                ? "Update
+            Company"
+                : "Add Company"
+            }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header
+      ><mat-card-title>All Companies</mat-card-title></mat-card-header
+    >
+    <mat-card-content>
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search companies</mat-label>
+        <input
+          matInput
+          [formControl]="searchControl"
+          placeholder="Search company, products or status"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+      <table mat-table [dataSource]="filteredCompanies | slice:(pageIndex * pageSize):((pageIndex + 1) * pageSize)">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Company</th>
+          <td mat-cell *matCellDef="let c">
+            <a
+              class="company-link"
+              [routerLink]="['/companies', c.id, 'products']"
+              >{{ c.name }}</a
+            >
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="products">
+          <th mat-header-cell *matHeaderCellDef>Products</th>
+          <td mat-cell *matCellDef="let c">{{ c.productCount }}</td>
+        </ng-container>
+        <ng-container matColumnDef="divisions">
+          <th mat-header-cell *matHeaderCellDef>Divisions</th>
+          <td mat-cell *matCellDef="let c">{{ c.divisionCount ?? 0 }}</td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let c">
+            {{ c.isActive ? "Active" : "Inactive" }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let c">
+            <button
+              type="button"
+              mat-stroked-button
+              color="primary"
+              (click)="toggleDivisions(c)"
+              [attr.aria-expanded]="expandedCompanyId === c.id"
+            >
+              <mat-icon>account_tree</mat-icon> Divisions
+            </button>
+            <button
+              type="button"
+              mat-icon-button
+              [routerLink]="['/companies', c.id, 'products']"
+              aria-label="View company details"
+              matTooltip="View company details"
+            >
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button
+              type="button"
+              mat-icon-button
+              color="primary"
+              (click)="edit(c)"
+              aria-label="Edit company"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              type="button"
+              mat-icon-button
+              color="warn"
+              (click)="delete(c)"
+              aria-label="Delete company"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columns"></tr>
+        <tr mat-row *matRowDef="let row; columns: columns"></tr>
+      </table>
+      @if (expandedCompanyId; as companyId) {
+        @if (expandedCompany; as company) {
+          <section class="division-manager" aria-label="Company divisions">
+            <div class="division-heading">
+              <div>
+                <h3>{{ company.name }} divisions</h3>
+                <p>Divisions are optional. Leave this list empty if the company has none.</p>
+              </div>
+              <button mat-button type="button" (click)="toggleDivisions(company)">Close</button>
+            </div>
+            @if (divisionLoading && !divisions.length) {
+              <p class="division-empty">Loading divisions…</p>
+            } @else if (!divisions.length) {
+              <p class="division-empty">No divisions added yet.</p>
+            } @else {
+              <ul class="division-list">
+                @for (division of divisions; track division.id) {
+                  <li>
+                    @if (editingDivisionId === division.id) {
+                      <input aria-label="Division name" [(ngModel)]="divisionName" (keyup.enter)="saveDivision(company)" />
+                      <button mat-button type="button" color="primary" (click)="saveDivision(company)" [disabled]="!divisionName.trim() || divisionLoading">Save</button>
+                      <button mat-button type="button" (click)="cancelDivisionEdit()">Cancel</button>
+                    } @else {
+                      <span>{{ division.name }}</span>
+                      <span class="division-actions">
+                        <button mat-icon-button type="button" color="primary" (click)="editDivision(division)" aria-label="Rename division"><mat-icon>edit</mat-icon></button>
+                        <button mat-icon-button type="button" color="warn" (click)="deleteDivision(company, division)" aria-label="Delete division" [disabled]="divisionLoading"><mat-icon>delete</mat-icon></button>
+                      </span>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+            @if (editingDivisionId === undefined) {
+              <div class="add-division">
+                <mat-form-field appearance="outline">
+                  <mat-label>New division name</mat-label>
+                  <input matInput [(ngModel)]="divisionName" maxlength="150" (keyup.enter)="saveDivision(company)" />
+                </mat-form-field>
+                <button mat-raised-button color="primary" type="button" (click)="saveDivision(company)" [disabled]="!divisionName.trim() || divisionLoading">Add Division</button>
+              </div>
+            }
+          </section>
+        }
+      }
+      <app-pagination [totalItems]="filteredCompanies.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+      @if (!filteredCompanies.length) {
+        <p class="empty">No matching companies found.</p>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

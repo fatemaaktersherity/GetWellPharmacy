@@ -1,0 +1,353 @@
+<div class="page-header">
+  <div>
+    <h1>General Ledger &amp; Accounting</h1>
+    <p>Chart of accounts, assets, liabilities, and ledger entries.</p>
+  </div>
+</div>
+
+<mat-tab-group [(selectedIndex)]="selectedTab">
+  <!-- Tab 1: Chart of Accounts -->
+  <mat-tab label="Chart of Accounts">
+    <mat-card class="tab-card">
+      <mat-card-content><button mat-raised-button color="primary" (click)="addAccount()">
+          <mat-icon>add</mat-icon> Add Account
+        </button>
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search accounts</mat-label>
+          <input matInput [formControl]="accountSearchControl" placeholder="Search by name or code" />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <table mat-table [dataSource]="filteredChartOfAccounts | slice:(accountsPageIndex * accountsPageSize):((accountsPageIndex + 1) * accountsPageSize)" class="data-table">
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>Code</th>
+            <td mat-cell *matCellDef="let a">
+              {{ a.code }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Account Name</th>
+            <td mat-cell *matCellDef="let a">
+              {{ a.name }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let a">
+              {{ a.accountType }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="parent">
+            <th mat-header-cell *matHeaderCellDef>Parent</th>
+            <td mat-cell *matCellDef="let a">
+              {{ a.parentName || "-" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="active">
+            <th mat-header-cell *matHeaderCellDef>Active</th>
+            <td mat-cell *matCellDef="let a">
+              <mat-icon [style.color]="a.isActive ? '#388e3c' : '#c62828'">{{
+                a.isActive ? "check_circle" : "cancel"
+                }}</mat-icon>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let a">
+              <button mat-icon-button (click)="editAccount(a)">
+                <mat-icon>edit</mat-icon></button><button mat-icon-button color="warn" (click)="deleteAccount(a)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="[
+              'code',
+              'name',
+              'type',
+              'parent',
+              'active',
+              'actions',
+            ]"></tr>
+          <tr mat-row *matRowDef="
+              let r;
+              columns: ['code', 'name', 'type', 'parent', 'active', 'actions']
+            "></tr>
+        </table>
+        <app-pagination [totalItems]="filteredChartOfAccounts.length" [(pageIndex)]="accountsPageIndex" [pageSize]="accountsPageSize" (pageSizeChange)="accountsPageSize = $event"></app-pagination>
+        @if (filteredChartOfAccounts.length === 0) {
+        <p class="empty">No matching accounts found.</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+
+  <!-- Tab 2: Company Assets -->
+  <mat-tab label="Assets">
+    <mat-card class="tab-card">
+      <mat-card-content>
+        <button mat-raised-button color="primary" (click)="addAsset()">
+          <mat-icon>add</mat-icon> Add Asset
+        </button>
+        <table mat-table [dataSource]="companyAssets | slice:(assetsPageIndex * assetsPageSize):((assetsPageIndex + 1) * assetsPageSize)" class="data-table">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Asset</th>
+            <td mat-cell *matCellDef="let a">
+              {{ a.name }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="purchaseDate">
+            <th mat-header-cell *matHeaderCellDef>Purchased</th>
+            <td mat-cell *matCellDef="let a">
+              {{ a.acquiredDate ? (a.acquiredDate | date: "mediumDate") : "-" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="purchaseValue">
+            <th mat-header-cell *matHeaderCellDef>Purchase Value</th>
+            <td mat-cell *matCellDef="let a">
+              {{ a.value | currency: "BDT " : "symbol" : "1.0-2" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="currentValue">
+            <th mat-header-cell *matHeaderCellDef>Current Value</th>
+            <td mat-cell *matCellDef="let a">
+              {{ a.bookValue | currency: "BDT " : "symbol" : "1.0-2" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="assetActions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let a">
+              @if (!a.disposalDate) {
+              <button mat-icon-button matTooltip="Run one depreciation period" (click)="depreciateAsset(a)">
+                <mat-icon>trending_down</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" matTooltip="Dispose asset" (click)="disposeAsset(a)">
+                <mat-icon>delete_forever</mat-icon>
+              </button>
+              } @else {
+              <span class="empty">Disposed</span>
+              }
+              <button mat-icon-button matTooltip="Edit asset" (click)="editAsset(a)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" matTooltip="Delete asset" (click)="deleteAssetRow(a)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="[
+              'name',
+              'purchaseDate',
+              'purchaseValue',
+              'currentValue',
+              'assetActions',
+            ]"></tr>
+          <tr mat-row *matRowDef="
+              let r;
+              columns: [
+                'name',
+                'purchaseDate',
+                'purchaseValue',
+                'currentValue',
+                'assetActions',
+              ]
+            "></tr>
+        </table>
+        <app-pagination [totalItems]="companyAssets.length" [(pageIndex)]="assetsPageIndex" [pageSize]="assetsPageSize" (pageSizeChange)="assetsPageSize = $event"></app-pagination>
+        @if (companyAssets.length === 0) {
+        <p class="empty">No assets found.</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+
+  <!-- Tab 3: Liabilities -->
+  <mat-tab label="Liabilities">
+    <mat-card class="tab-card">
+      <mat-card-content>
+        <button mat-raised-button color="primary" (click)="addLiability()">
+          <mat-icon>add</mat-icon> Add Liability
+        </button>
+        <table mat-table [dataSource]="companyLiabilities | slice:(liabilitiesPageIndex * liabilitiesPageSize):((liabilitiesPageIndex + 1) * liabilitiesPageSize)" class="data-table">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Liability</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.name }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let l">
+              {{ liabilityTypeLabel(l.liabilityType) }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="dueDate">
+            <th mat-header-cell *matHeaderCellDef>Due Date</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.dueDate ? (l.dueDate | date: "mediumDate") : "-" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Total Amount</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.amount | currency: "BDT " : "symbol" : "1.0-2" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="remaining">
+            <th mat-header-cell *matHeaderCellDef>Remaining</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.outstandingAmount | currency: "BDT " : "symbol" : "1.0-2" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="settled">
+            <th mat-header-cell *matHeaderCellDef>Settled</th>
+            <td mat-cell *matCellDef="let l">
+              <mat-icon [style.color]="l.outstandingAmount <= 0 ? '#388e3c' : '#f57c00'">{{
+                l.outstandingAmount <= 0 ? "check_circle" : "pending" }}</mat-icon>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="liabilityActions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let l">
+              @if (l.outstandingAmount > 0) {
+              <button mat-stroked-button (click)="payLiability(l)">
+                Record Payment
+              </button>
+              }
+              <button mat-icon-button matTooltip="Edit liability" (click)="editLiability(l)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" matTooltip="Delete liability" (click)="deleteLiabilityRow(l)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="[
+              'name',
+              'type',
+              'dueDate',
+              'amount',
+              'remaining',
+              'settled',
+              'liabilityActions',
+            ]"></tr>
+          <tr mat-row *matRowDef="
+              let r;
+              columns: [
+                'name',
+                'type',
+                'dueDate',
+                'amount',
+                'remaining',
+                'settled',
+                'liabilityActions',
+              ]
+            "></tr>
+        </table>
+        <app-pagination [totalItems]="companyLiabilities.length" [(pageIndex)]="liabilitiesPageIndex" [pageSize]="liabilitiesPageSize" (pageSizeChange)="liabilitiesPageSize = $event"></app-pagination>
+        @if (companyLiabilities.length === 0) {
+        <p class="empty">No liabilities found.</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+
+  <!-- Tab 4: Ledger Entries -->
+  <mat-tab label="Ledger Entries">
+    <mat-card class="tab-card">
+      <mat-card-content>
+        @if (isAdmin) {
+        <button mat-raised-button color="primary" (click)="openJournalEntryDialog()">
+          <mat-icon>add</mat-icon> New Journal Entry
+        </button>
+        }
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search ledger entries</mat-label>
+          <input matInput [formControl]="ledgerSearchControl" placeholder="Search by account, ref# or description" />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <table mat-table [dataSource]="filteredLedgerAccounts | slice:(ledgerPageIndex * ledgerPageSize):((ledgerPageIndex + 1) * ledgerPageSize)" class="data-table">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.transactionDate | date: "mediumDate" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="account">
+            <th mat-header-cell *matHeaderCellDef>Account</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.chartOfAccountName }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="ref">
+            <th mat-header-cell *matHeaderCellDef>Ref#</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.voucherNo || "-" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.description || "-" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="debit">
+            <th mat-header-cell *matHeaderCellDef>Debit</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.debitAmount | currency: "BDT " : "symbol" : "1.0-2" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="credit">
+            <th mat-header-cell *matHeaderCellDef>Credit</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.creditAmount | currency: "BDT " : "symbol" : "1.0-2" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="balance">
+            <th mat-header-cell *matHeaderCellDef>Balance</th>
+            <td mat-cell *matCellDef="let l">
+              {{ l.runningBalance | currency: "BDT " : "symbol" : "1.0-2" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="ledgerActions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let l">
+              @if (l.isReversed) {
+              <span class="empty">Reversed</span>
+              } @else if (isAdmin && canReverse(l)) {
+              <button mat-icon-button color="warn" matTooltip="Reverse this voucher" (click)="reverseVoucher(l)">
+                <mat-icon>undo</mat-icon>
+              </button>
+              }
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="[
+              'date',
+              'account',
+              'ref',
+              'description',
+              'debit',
+              'credit',
+              'balance',
+              'ledgerActions',
+            ]"></tr>
+          <tr mat-row *matRowDef="
+              let r;
+              columns: [
+                'date',
+                'account',
+                'ref',
+                'description',
+                'debit',
+                'credit',
+                'balance',
+                'ledgerActions',
+              ]
+            "></tr>
+        </table>
+        <app-pagination [totalItems]="filteredLedgerAccounts.length" [(pageIndex)]="ledgerPageIndex" [pageSize]="ledgerPageSize" (pageSizeChange)="ledgerPageSize = $event"></app-pagination>
+        @if (filteredLedgerAccounts.length === 0) {
+        <p class="empty">No matching ledger entries found.</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+</mat-tab-group>

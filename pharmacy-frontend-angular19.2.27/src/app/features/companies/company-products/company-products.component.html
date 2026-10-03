@@ -1,0 +1,128 @@
+<div class="page-header">
+  <div>
+    <h1>{{ company?.name || "Company" }}</h1>
+    <p>Company details and the medicines listed under this manufacturer.</p>
+  </div>
+  <a mat-stroked-button routerLink="/companies"
+    ><mat-icon>arrow_back</mat-icon> Back to Companies</a
+  >
+</div>
+
+<mat-card class="company-details-card">
+  <mat-card-header><mat-card-title>Company Details</mat-card-title></mat-card-header>
+  <mat-card-content>
+    <div class="company-summary">
+      <div><span>Company</span><strong>{{ company?.name || "Loading…" }}</strong></div>
+      <div><span>Status</span><strong>{{ company ? (company.isActive ? "Active" : "Inactive") : "—" }}</strong></div>
+      <div><span>Medicines</span><strong>{{ company?.productCount ?? products.length }}</strong></div>
+      <div><span>Divisions</span><strong>{{ divisions.length }}</strong></div>
+    </div>
+    <div class="division-section">
+      <h3>Divisions</h3>
+      @if (divisions.length) {
+        <div class="division-chips">
+          @for (division of divisions; track division.id) {
+            <span class="division-chip">{{ division.name }}</span>
+          }
+        </div>
+      } @else {
+        <p class="no-divisions">No divisions have been added for this company.</p>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<mat-card
+  ><mat-card-content class="table-wrap">
+    <div class="filter-row">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search this company's medicines</mat-label>
+        <input
+          matInput
+          [formControl]="searchControl"
+          placeholder="Search name, generic, strength"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Dosage Form</mat-label>
+        <mat-select [formControl]="dosageFormControl">
+          <mat-option [value]="null">All Dosage Forms</mat-option>
+          @for (d of filterOptions.dosageForms; track d.id) {
+            <mat-option [value]="d.id">{{ d.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Generic</mat-label>
+        <mat-select [formControl]="genericControl">
+          <mat-option [value]="null">All Generics</mat-option>
+          @for (g of filterOptions.genericNames; track g) {
+            <mat-option [value]="g">{{ g }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (hasActiveFilters) {
+        <button mat-stroked-button type="button" (click)="clearFilters()">
+          <mat-icon>clear</mat-icon> Clear
+        </button>
+      }
+    </div>
+
+    <table mat-table [dataSource]="filteredProducts">
+      <ng-container matColumnDef="image">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let p">
+          @if (imageUrl(p.imagePath); as img) {
+            <img class="thumb" [src]="img" [alt]="p.productName" />
+          } @else {
+            <mat-icon>medication</mat-icon>
+          }
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let p">
+          <a
+            class="company-link"
+            [routerLink]="['/products', p.id]"
+            [queryParams]="{ companyId }"
+            >{{ p.productName }}</a
+          >
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="strength">
+        <th mat-header-cell *matHeaderCellDef>Strength</th>
+        <td mat-cell *matCellDef="let p">{{ p.strength }}</td>
+      </ng-container>
+      <ng-container matColumnDef="dosageForm">
+        <th mat-header-cell *matHeaderCellDef>Dosage Form</th>
+        <td mat-cell *matCellDef="let p">{{ p.dosageFormName || "-" }}</td>
+      </ng-container>
+      <ng-container matColumnDef="generic">
+        <th mat-header-cell *matHeaderCellDef>Generic</th>
+        <td mat-cell *matCellDef="let p">{{ p.genericName || "-" }}</td>
+      </ng-container>
+      <ng-container matColumnDef="stock">
+        <th mat-header-cell *matHeaderCellDef>Stock</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.stockQuantity }} {{ p.unitName }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="price">
+        <th mat-header-cell *matHeaderCellDef>Sale Price</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.salePrice ?? p.unitPrice | currency: "BDT " }}
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="cols"></tr>
+      <tr mat-row *matRowDef="let row; columns: cols"></tr>
+    </table>
+    @if (!filteredProducts.length) {
+      <div class="empty">No medicines found for this company.</div>
+    }
+  </mat-card-content></mat-card
+>

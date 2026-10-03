@@ -1,0 +1,74 @@
+<div class="page-header">
+  <div>
+    <h1>Near-Expiry Report</h1>
+    <p>
+      Batches that haven't expired yet but are within the selected window —
+      discount, promote, or return these before they become a write-off.
+    </p>
+  </div>
+  <div class="header-actions">
+    <a mat-stroked-button routerLink="/expired"
+      ><mat-icon>arrow_back</mat-icon> Back to Expired Products</a
+    >
+  </div>
+</div>
+<mat-card>
+  <div class="filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Expiring within</mat-label>
+      <mat-select [formControl]="windowDays">
+        @for (d of windowOptions; track d) {
+          <mat-option [value]="d">{{ d }} days</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search</mat-label>
+      <input
+        matInput
+        [formControl]="searchControl"
+        placeholder="Search product, batch or warehouse"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </div>
+  <p class="count">
+    {{ filteredItems.length }} batch(es) expiring within
+    {{ windowDays.value }} days.
+  </p>
+  <table mat-table [dataSource]="filteredItems">
+    <ng-container matColumnDef="product"
+      ><th mat-header-cell *matHeaderCellDef>Product</th>
+      <td mat-cell *matCellDef="let x">{{ x.productName }}</td></ng-container
+    >
+    <ng-container matColumnDef="batch"
+      ><th mat-header-cell *matHeaderCellDef>Batch</th>
+      <td mat-cell *matCellDef="let x">{{ x.batchNumber }}</td></ng-container
+    >
+    <ng-container matColumnDef="expiry"
+      ><th mat-header-cell *matHeaderCellDef>Expiry</th>
+      <td mat-cell *matCellDef="let x">{{ x.expiryDate }}</td></ng-container
+    >
+    <ng-container matColumnDef="daysLeft">
+      <th mat-header-cell *matHeaderCellDef>Days Left</th>
+      <td mat-cell *matCellDef="let x">
+        <span class="days-badge" [class.urgent]="daysLeft(x) <= 7">{{
+          daysLeft(x)
+        }}</span>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="quantity"
+      ><th mat-header-cell *matHeaderCellDef>Available</th>
+      <td mat-cell *matCellDef="let x">{{ x.quantity }}</td></ng-container
+    >
+    <ng-container matColumnDef="warehouse"
+      ><th mat-header-cell *matHeaderCellDef>Warehouse</th>
+      <td mat-cell *matCellDef="let x">{{ x.warehouseName }}</td></ng-container
+    >
+    <tr mat-header-row *matHeaderRowDef="cols"></tr>
+    <tr mat-row *matRowDef="let row; columns: cols"></tr>
+  </table>
+  <p class="empty" *ngIf="!filteredItems.length">
+    No batches expiring in this window.
+  </p>
+</mat-card>

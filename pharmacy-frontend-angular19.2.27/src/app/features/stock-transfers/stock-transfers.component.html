@@ -1,0 +1,206 @@
+<div class="page-header">
+  <div>
+    <h1>Stock Transfers</h1>
+    <p>Search and filter every transfer across all warehouses.</p>
+  </div>
+  <button mat-raised-button color="primary" type="button" (click)="showCreateForm = !showCreateForm">
+    <mat-icon>{{ showCreateForm ? 'close' : 'add' }}</mat-icon>
+    {{ showCreateForm ? 'Close' : 'New Transfer' }}
+  </button>
+</div>
+
+@if (showCreateForm) {
+  <mat-card class="create-transfer-card">
+    <mat-card-header>
+      <mat-card-title>Create stock transfer</mat-card-title>
+      <mat-card-subtitle>Choose the source batches and quantities. Stock is deducted from the source warehouse when you save.</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="transferForm" (ngSubmit)="submitTransfer()">
+        <div class="create-transfer-fields">
+          <mat-form-field appearance="outline">
+            <mat-label>Transfer / Reference No.</mat-label>
+            <input matInput formControlName="invoiceId" placeholder="e.g. ST-20260930-001" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>From warehouse</mat-label>
+            <mat-select formControlName="fromWarehouseId" (selectionChange)="loadSourceStocks($event.value)">
+              @for (w of warehouses; track w.warehouseId) {
+                <mat-option [value]="w.warehouseId">{{ w.warehouseName }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>To warehouse</mat-label>
+            <mat-select formControlName="toWarehouseId">
+              @for (w of warehouses; track w.warehouseId) {
+                @if (w.warehouseId !== transferForm.controls.fromWarehouseId.value) {
+                  <mat-option [value]="w.warehouseId">{{ w.warehouseName }}</mat-option>
+                }
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <h3>Products / batches</h3>
+        @for (line of transferItems; track $index) {
+          <div class="transfer-line">
+            <mat-form-field appearance="outline" class="batch-field">
+              <mat-label>Product and batch</mat-label>
+              <mat-select [(ngModel)]="line.sourceProductStockId" [ngModelOptions]="{ standalone: true }" (selectionChange)="onStockSelected(line)">
+                @for (s of sourceStocks; track s.stockId) {
+                  <mat-option [value]="s.stockId">
+                    {{ s.productName }} — {{ s.batchNumber || 'No batch' }} (Available: {{ s.availableQuantity ?? s.quantity }})
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="quantity-field">
+              <mat-label>Quantity</mat-label>
+              <input matInput type="number" min="1" [max]="availableForStock(line.sourceProductStockId)" [(ngModel)]="line.quantity" [ngModelOptions]="{ standalone: true }" />
+            </mat-form-field>
+            <button mat-icon-button color="warn" type="button" aria-label="Remove batch" (click)="transferItems.splice($index, 1)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        }
+        <div class="create-transfer-actions">
+          <button mat-stroked-button type="button" (click)="addTransferLine()" [disabled]="!transferForm.controls.fromWarehouseId.value">
+            <mat-icon>add</mat-icon> Add batch
+          </button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="savingTransfer || transferForm.invalid || !transferItems.length">
+            {{ savingTransfer ? 'Saving…' : 'Create Transfer' }}
+          </button>
+        </div>
+        @if (transferForm.controls.fromWarehouseId.value && sourceStocks.length === 0) {
+          <p class="empty">No available stock in the selected source warehouse.</p>
+        }
+      </form>
+    </mat-card-content>
+  </mat-card>
+}
+
+<div class="filter-bar">
+  <form [formGroup]="filters" class="filter-form">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search</mat-label>
+      <input
+        matInput
+        formControlName="search"
+        placeholder="Invoice #, warehouse name"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>From warehouse</mat-label>
+      <mat-select formControlName="fromWarehouseId">
+        <mat-option [value]="null">Any</mat-option>
+        @for (w of warehouses; track w.warehouseId) {
+          <mat-option [value]="w.warehouseId">{{ w.warehouseName }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>To warehouse</mat-label>
+      <mat-select formControlName="toWarehouseId">
+        <mat-option [value]="null">Any</mat-option>
+        @for (w of warehouses; track w.warehouseId) {
+          <mat-option [value]="w.warehouseId">{{ w.warehouseName }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option value="all">All</mat-option>
+        <mat-option value="pending">Pending</mat-option>
+        <mat-option value="received">Received</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-stroked-button type="button" (click)="resetFilters()">
+      <mat-icon>filter_alt_off</mat-icon> Clear
+    </button>
+    <button mat-stroked-button type="button" (click)="load()">
+      <mat-icon>refresh</mat-icon> Refresh
+    </button>
+  </form>
+</div>
+
+<mat-card>
+  <mat-card-content>
+    <table mat-table [dataSource]="filteredTransfers | slice:(pageIndex * pageSize):((pageIndex + 1) * pageSize)" class="transfers-table">
+      <ng-container matColumnDef="invoice">
+        <th mat-header-cell *matHeaderCellDef>Invoice</th>
+        <td mat-cell *matCellDef="let t">{{ t.invoiceId }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let t">
+          {{ t.transferDate | date: "mediumDate" }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="from">
+        <th mat-header-cell *matHeaderCellDef>From</th>
+        <td mat-cell *matCellDef="let t">
+          <a [routerLink]="['/warehouses', t.fromWarehouseId]">{{
+            t.fromWarehouseName || "#" + t.fromWarehouseId
+          }}</a>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="to">
+        <th mat-header-cell *matHeaderCellDef>To</th>
+        <td mat-cell *matCellDef="let t">
+          <a [routerLink]="['/warehouses', t.toWarehouseId]">{{
+            t.toWarehouseName || "#" + t.toWarehouseId
+          }}</a>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="qty">
+        <th mat-header-cell *matHeaderCellDef>Total Qty</th>
+        <td mat-cell *matCellDef="let t">{{ t.totalQty }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let t">
+          <mat-chip
+            [color]="t.isReceived ? 'primary' : 'warn'"
+            selected
+            disableRipple
+          >
+            {{ t.isReceived ? "Received" : "Pending" }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let t">
+          <a
+            mat-icon-button
+            [routerLink]="['/warehouses', t.toWarehouseId]"
+            title="Open receiving warehouse"
+          >
+            <mat-icon>open_in_new</mat-icon>
+          </a>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+    <app-pagination [totalItems]="filteredTransfers.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+
+    @if (!isLoading && filteredTransfers.length === 0) {
+      <p class="empty">No transfers match your filters.</p>
+    }
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,251 @@
+<section class="dashboard">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">GET WELL OVERVIEW</p>
+      <h1>Get Well Dashboard</h1>
+      <p class="subtitle">
+        Monitor sales, inventory and purchasing from one place.
+      </p>
+    </div>
+    <div class="hero-actions">
+      @if (lastUpdated) {
+        <span class="updated"
+          >Updated {{ lastUpdated | date: "shortTime" }}</span
+        >
+      }
+      <button mat-stroked-button (click)="refresh()" [disabled]="loading">
+        <mat-icon>refresh</mat-icon> Refresh</button
+      ><a mat-flat-button color="primary" routerLink="/sales/new"
+        ><mat-icon>add</mat-icon> New Sale</a
+      >
+    </div>
+  </header>
+  @if (errors.length) {
+    <div class="notice">
+      <mat-icon>info</mat-icon
+      ><span
+        >Some dashboard information is unavailable. {{ errors.join(" ") }}</span
+      >
+    </div>
+  }
+  <section class="metrics" [class.dimmed]="loading">
+    <mat-card class="metric accent-blue"
+      ><div class="metric-icon"><mat-icon>point_of_sale</mat-icon></div>
+      <div>
+        <span>Today's sales</span
+        ><strong>{{
+          todaySales | currency: "BDT " : "symbol" : "1.0-0"
+        }}</strong
+        ><small>Sales recorded today</small>
+      </div></mat-card
+    >
+    <mat-card class="metric accent-green"
+      ><div class="metric-icon"><mat-icon>inventory_2</mat-icon></div>
+      <div>
+        <span>Inventory value</span
+        ><strong>{{
+          totalStockValue | currency: "BDT " : "symbol" : "1.0-0"
+        }}</strong
+        ><small>Available sellable batches</small>
+      </div></mat-card
+    >
+    <mat-card class="metric accent-violet"
+      ><div class="metric-icon"><mat-icon>shopping_cart</mat-icon></div>
+      <div>
+        <span>Today's purchases</span
+        ><strong>{{
+          todayPurchase | currency: "BDT " : "symbol" : "1.0-0"
+        }}</strong
+        ><small>Purchase invoices recorded today</small>
+      </div></mat-card
+    >
+    <mat-card class="metric accent-amber"
+      ><div class="metric-icon"><mat-icon>payments</mat-icon></div>
+      <div>
+        <span>Supplier due</span
+        ><strong>{{
+          pendingPurchaseAmount | currency: "BDT " : "symbol" : "1.0-0"
+        }}</strong
+        ><small>Outstanding purchase balance</small>
+      </div></mat-card
+    >
+  </section>
+  <section class="charts-grid" aria-label="Transaction charts">
+    <mat-card class="chart-card">
+      <div class="chart-heading">
+        <div>
+          <h2>Sales &amp; purchases</h2>
+          <p>Daily totals for the last 30 days · updates every minute</p>
+        </div>
+      </div>
+      <div class="line-chart-wrap">
+        <svg class="line-chart" viewBox="0 0 740 270" role="img" aria-label="Daily sales and purchase totals for the last 30 days">
+          @for (tick of trendTicks; track tick.y) {
+            <line class="chart-gridline" x1="64" [attr.y1]="tick.y" x2="714" [attr.y2]="tick.y" />
+            <text class="chart-axis-label" x="54" [attr.y]="tick.y + 4" text-anchor="end">{{ tick.label }}</text>
+          }
+          <polyline class="sales-line" [attr.points]="salesLine" />
+          <polyline class="purchases-line" [attr.points]="purchasesLine" />
+          @for (point of trendPoints; track point.dateLabel) {
+            <circle class="sales-point" [attr.cx]="point.x" [attr.cy]="point.salesY" r="2.5">
+              <title>{{ point.dateLabel }} · Sales: {{ point.sales | currency: "BDT " : "symbol" : "1.0-0" }}</title>
+            </circle>
+            <circle class="purchase-point" [attr.cx]="point.x" [attr.cy]="point.purchasesY" r="2.5">
+              <title>{{ point.dateLabel }} · Purchases: {{ point.purchases | currency: "BDT " : "symbol" : "1.0-0" }}</title>
+            </circle>
+          }
+          @for (point of trendPoints; track point.dateLabel; let i = $index) {
+            @if (i % 5 === 0 || i === 29) {
+              <text class="chart-date-label" [attr.x]="point.x" y="254" [attr.text-anchor]="i === 0 ? 'start' : (i === 29 ? 'end' : 'middle')">{{ point.dateLabel }}</text>
+            }
+          }
+        </svg>
+      </div>
+      <div class="chart-legend">
+        <span><i class="legend-sales"></i> Net sales</span>
+        <span><i class="legend-purchases"></i> Purchases</span>
+        <small>Sales include discounts and are reduced by returns on the return date.</small>
+      </div>
+    </mat-card>
+    <mat-card class="chart-card payment-card">
+      <div class="chart-heading">
+        <div>
+          <h2>Sales by payment method</h2>
+          <p>Number of sales in the last 30 days</p>
+        </div>
+      </div>
+      <div class="payment-chart-content">
+        <div class="donut-chart" [style.background]="paymentPieGradient" role="img" [attr.aria-label]="paymentSaleCount + ' sales by payment method'">
+          <div class="donut-hole"><strong>{{ paymentSaleCount }}</strong><span>sales</span></div>
+        </div>
+        <div class="payment-legend">
+          @for (slice of paymentSlices; track slice.method) {
+            <div class="payment-legend-row">
+              <span class="payment-name"><i [style.background]="slice.color"></i>{{ slice.method }}</span>
+              <strong>{{ slice.count }}</strong>
+              <small>{{ slice.percent | number: "1.0-0" }}%</small>
+            </div>
+          } @empty {
+            <p class="chart-empty">No sales recorded in this period.</p>
+          }
+        </div>
+      </div>
+      <p class="chart-footnote">Each sale is counted once using its recorded payment method.</p>
+    </mat-card>
+  </section>
+  <section class="content-grid">
+    <mat-card class="panel sales-panel"
+      ><mat-card-header
+        ><div>
+          <mat-card-title>Recent sales</mat-card-title
+          ><mat-card-subtitle
+            >Latest completed and pending bills</mat-card-subtitle
+          >
+        </div>
+        <a mat-button routerLink="/sales">View all</a></mat-card-header
+      ><mat-card-content class="table-wrap"
+        ><mat-form-field appearance="outline" class="search-field"
+          ><mat-label>Search recent sales</mat-label
+          ><input
+            matInput
+            [formControl]="salesSearchControl"
+            placeholder="Search invoice or customer"
+          /><mat-icon matSuffix>search</mat-icon></mat-form-field
+        >
+        <table>
+          <thead>
+            <tr>
+              <th>Invoice</th>
+              <th>Customer</th>
+              <th>Time</th>
+              <th class="right">Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sale of filteredRecentSales; track sale.saleId) {
+              <tr>
+                <td class="invoice">#{{ sale.saleId }}</td>
+                <td>{{ sale.customerName || "Walk-in customer" }}</td>
+                <td>{{ sale.saleDate | date: "shortTime" }}</td>
+                <td class="right">
+                  {{ sale.totalAmount | currency: "BDT " : "symbol" : "1.0-0" }}
+                </td>
+                <td>
+                  <span
+                    class="status"
+                    [class.paid]="!sale.hasReturns && sale.isPaid"
+                    [class.pending]="!sale.hasReturns && !sale.isPaid"
+                    [class.returned]="sale.hasReturns"
+                    >{{ statusLabel(sale) }}</span
+                  >
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty">No sales recorded yet.</td>
+              </tr>
+            }
+          </tbody>
+        </table></mat-card-content
+      ></mat-card
+    >
+    <aside class="side-panels">
+      <mat-card class="attention-card low-stock"
+        ><div class="attention-top">
+          <div class="icon-wrap"><mat-icon>warning_amber</mat-icon></div>
+          <a mat-button routerLink="/inventory">Inventory</a>
+        </div>
+        <strong>{{ lowStockProducts.length }}</strong>
+        <h2>Low-stock medicines</h2>
+        <p>Items at or below their minimum stock level.</p>
+        @if (lowStockProducts.length) {
+          <div class="medicine-list">
+            @for (product of lowStockProducts.slice(0, 3); track product.id) {
+              <div>
+                <span>{{ product.productName }}</span
+                ><b>{{ product.stockQuantity }} left</b>
+              </div>
+            }
+          </div>
+        }</mat-card
+      ><mat-card class="attention-card expired"
+        ><div class="attention-top">
+          <div class="icon-wrap"><mat-icon>event_busy</mat-icon></div>
+          <a mat-button routerLink="/expired">Review</a>
+        </div>
+        <strong>{{ expiredBatches }}</strong>
+        <h2>Expired batches</h2>
+        <p>Remove or record expiry disposal from the batch screen.</p></mat-card
+      >
+      <mat-card class="attention-card near-expiry">
+        <div class="attention-top">
+          <div class="icon-wrap"><mat-icon>schedule</mat-icon></div>
+          <a mat-button routerLink="/expired/near-expiry">Review</a>
+        </div>
+        <strong>{{ nearExpiryBatches }}</strong>
+        <h2>Expiring within 30 days</h2>
+        <p>
+          Discount, promote, or return these before they become a write-off.
+        </p>
+      </mat-card>
+    </aside>
+  </section>
+  <section class="quick-actions">
+    <a routerLink="/purchases/new"
+      ><mat-icon>add_shopping_cart</mat-icon
+      ><span><b>New purchase</b><small>Receive supplier stock</small></span
+      ><mat-icon class="arrow">arrow_forward</mat-icon></a
+    ><a routerLink="/products/new"
+      ><mat-icon>medication</mat-icon
+      ><span
+        ><b>Add medicine</b><small>Create product and packaging</small></span
+      ><mat-icon class="arrow">arrow_forward</mat-icon></a
+    ><a routerLink="/returns/sale/new"
+      ><mat-icon>assignment_return</mat-icon
+      ><span
+        ><b>Sale return</b><small>Return from original sale line</small></span
+      ><mat-icon class="arrow">arrow_forward</mat-icon></a
+    >
+  </section>
+</section>

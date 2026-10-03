@@ -1,0 +1,151 @@
+<section class="users-roles">
+  <div class="page-header">
+    <div>
+      <h1>Users & Roles</h1>
+      <p>Manage employee access levels and account status.</p>
+    </div>
+    <button
+      mat-raised-button
+      color="primary"
+      type="button"
+      (click)="loadUsers()"
+    >
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </div>
+
+  <mat-card>
+    <div class="filters">
+      <mat-form-field appearance="outline">
+        <mat-label>Search users</mat-label>
+        <input
+          matInput
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          placeholder="Name, email, username, phone"
+        />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Role</mat-label>
+        <mat-select
+          [ngModel]="roleFilter()"
+          (ngModelChange)="roleFilter.set($event)"
+        >
+          <mat-option value="All">All roles</mat-option>
+          @for (role of roles; track role) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (message()) {
+      <p class="message">{{ message() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="loading"><mat-spinner diameter="34"></mat-spinner></div>
+    } @else {
+      <div class="table-wrap">
+        <table mat-table [dataSource]="filteredUsers() | slice:(pageIndex * pageSize):((pageIndex + 1) * pageSize)">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let user">
+              <strong>{{ user.fullName }}</strong>
+              <span>{{ user.username }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let user">{{ user.email || "-" }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="phone">
+            <th mat-header-cell *matHeaderCellDef>Phone</th>
+            <td mat-cell *matCellDef="let user">{{ user.phone || "-" }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="role">
+            <th mat-header-cell *matHeaderCellDef>Role</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-form-field appearance="outline" class="role-field">
+                <mat-select
+                  [ngModel]="user.roleName"
+                  (ngModelChange)="changeRole(user, $event)"
+                  [disabled]="savingId() === user.id"
+                >
+                  @for (role of roles; track role) {
+                    <mat-option [value]="role">{{ role }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-slide-toggle
+                [checked]="user.isActive"
+                [disabled]="savingId() === user.id"
+                (change)="setActive(user, $event.checked)"
+              >
+                {{ user.isActive ? "Active" : "Inactive" }}
+              </mat-slide-toggle>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let user">
+              @if (savingId() === user.id) {
+                <mat-spinner diameter="24"></mat-spinner>
+              } @else {
+                <div class="action-buttons">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    [disabled]="user.roleName === 'Admin'"
+                    (click)="changeRole(user, 'Admin')"
+                  >
+                    Make Admin
+                  </button>
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    [disabled]="user.roleName === 'Manager'"
+                    (click)="changeRole(user, 'Manager')"
+                  >
+                    Make Manager
+                  </button>
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    [disabled]="user.roleName === 'Cashier'"
+                    (click)="changeRole(user, 'Cashier')"
+                  >
+                    Make Cashier
+                  </button>
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    (click)="resetPassword(user)"
+                  >
+                    Reset Password
+                  </button>
+                </div>
+              }
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+        <app-pagination [totalItems]="filteredUsers().length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+      </div>
+    }
+  </mat-card>
+</section>

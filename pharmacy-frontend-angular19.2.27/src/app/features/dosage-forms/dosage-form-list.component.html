@@ -1,0 +1,56 @@
+<div class="page-header">
+  <div>
+    <h1>Dosage Forms</h1>
+    <p>Tablet, Syrup, Injection and every other form in use — add, rename, or remove them here.</p>
+  </div>
+  <a mat-stroked-button routerLink="/brands/search">
+    <mat-icon>search</mat-icon> Brand Search
+  </a>
+</div>
+
+<div class="content-grid">
+  <mat-card>
+    <mat-card-header><mat-card-title>{{ editingForm ? 'Edit Dosage Form' : 'Add Dosage Form' }}</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Dosage form name</mat-label>
+          <input matInput formControlName="name" maxlength="100" autocomplete="off" placeholder="e.g. Tablet, Syrup, Injection">
+          @if (form.controls.name.hasError('required')) { <mat-error>Name is required.</mat-error> }
+          @if (form.controls.name.hasError('maxlength')) { <mat-error>Name can be up to 100 characters.</mat-error> }
+        </mat-form-field>
+        <div class="actions">
+          @if (editingForm) { <button type="button" mat-button (click)="cancelEdit()">Cancel</button> }
+          <button mat-raised-button color="primary" [disabled]="form.invalid || saving">{{ editingForm ? 'Update' : 'Add' }}</button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header><mat-card-title>All Dosage Forms</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <table mat-table [dataSource]="pagedDosageForms">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Dosage Form</th>
+          <td mat-cell *matCellDef="let d">{{ d.name }}</td>
+        </ng-container>
+        <ng-container matColumnDef="products">
+          <th mat-header-cell *matHeaderCellDef>Products</th>
+          <td mat-cell *matCellDef="let d">{{ d.productCount }}</td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let d">
+            <button mat-icon-button color="primary" (click)="edit(d)" aria-label="Edit dosage form"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button color="warn" (click)="delete(d)" aria-label="Delete dosage form"><mat-icon>delete</mat-icon></button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columns"></tr>
+        <tr mat-row *matRowDef="let row; columns: columns"></tr>
+      </table>
+      @if (!loading && !dosageForms.length) { <p class="empty">No dosage forms have been added yet.</p> }
+      <app-pagination [totalItems]="dosageForms.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+    </mat-card-content>
+  </mat-card>
+</div>

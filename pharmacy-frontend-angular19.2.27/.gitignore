@@ -1,0 +1,10 @@
+/dist
+/.angular
+/node_modules
+*.log
+.DS_Store
+# .env / .env.development / .env.production hold non-secret build defaults
+# and are meant to be committed so the build is reproducible. Only
+# personal/local overrides are ignored:
+.env.local
+.env.*.local

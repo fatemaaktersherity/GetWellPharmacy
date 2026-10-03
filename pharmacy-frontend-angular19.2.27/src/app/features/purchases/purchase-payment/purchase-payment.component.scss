@@ -1,0 +1,13 @@
+.page-header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; }
+.page-header h1 { margin:0; }
+.page-header p { margin:6px 0 0; color:#666; }
+.payment-layout { display:grid; grid-template-columns:minmax(280px, 1fr) minmax(340px, 1fr); gap:24px; }
+.summary { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:20px; }
+.summary div { display:flex; flex-direction:column; gap:5px; }
+.summary span { color:#677; font-size:13px; }
+.summary strong { font-size:16px; }
+.summary .due strong { color:#d32f2f; }
+.payment-form { display:flex; flex-direction:column; gap:8px; }
+.payment-form mat-form-field { width:100%; }
+.help { color:#555; margin:4px 0 14px; line-height:1.5; }
+@media (max-width: 800px) { .page-header { align-items:flex-start; flex-direction:column; } .payment-layout { grid-template-columns:1fr; } }

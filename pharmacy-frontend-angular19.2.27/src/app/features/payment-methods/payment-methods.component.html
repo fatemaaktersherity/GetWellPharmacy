@@ -1,0 +1,223 @@
+<div class="container-fluid payment-page">
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div>
+      <h2>Payment Methods</h2>
+      <p>Manage payment methods used in the pharmacy.</p>
+    </div>
+
+    <button class="btn btn-primary" *ngIf="editingId !== null" (click)="cancelEdit()">
+      + Add New Payment Method
+    </button>
+  </div>
+
+  <!-- SUCCESS MESSAGE -->
+
+  <div class="alert alert-success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+
+  <!-- ERROR MESSAGE -->
+
+  <div class="alert alert-danger" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <div class="row">
+    <!-- ========================= -->
+    <!-- FORM -->
+    <!-- ========================= -->
+
+    <div class="col-lg-4">
+      <div class="card form-card">
+        <div class="card-header">
+          <h5>
+            {{
+              editingId === null ? "Add Payment Method" : "Edit Payment Method"
+            }}
+          </h5>
+        </div>
+
+        <div class="card-body">
+          <form (ngSubmit)="savePaymentMethod()" #paymentForm="ngForm">
+            <!-- NAME -->
+
+            <div class="form-group">
+              <label for="name">
+                Payment Method Name
+                <span class="required">*</span>
+              </label>
+
+              <input
+                type="text"
+                id="name"
+                name="name"
+                class="form-control"
+                placeholder="e.g. Cash"
+                maxlength="50"
+                [(ngModel)]="paymentMethod.name"
+                required
+              />
+            </div>
+
+            <!-- LEDGER ACCOUNT -->
+
+            <div class="form-group">
+              <label for="ledgerAccountCode">Ledger Account <span class="required">*</span></label>
+              <select
+                id="ledgerAccountCode"
+                name="ledgerAccountCode"
+                class="form-control"
+                [(ngModel)]="paymentMethod.ledgerAccountCode"
+                required
+              >
+                <option value="">Choose an active asset account</option>
+                <option *ngFor="let account of ledgerAccounts" [value]="account.code">
+                  {{ account.code }} — {{ account.name }}
+                </option>
+              </select>
+              <small class="form-text text-muted">Payments using this method post to this account. Create a dedicated account in Chart of Accounts first if needed.</small>
+            </div>
+
+            <!-- ACTIVE -->
+
+            <div class="form-check">
+              <input
+                type="checkbox"
+                id="isActive"
+                name="isActive"
+                class="form-check-input"
+                [(ngModel)]="paymentMethod.isActive"
+              />
+
+              <label class="form-check-label" for="isActive"> Active </label>
+            </div>
+
+            <!-- BUTTONS -->
+
+            <div class="form-buttons">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="paymentForm.invalid"
+              >
+                {{ editingId === null ? "Save" : "Update" }}
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-secondary"
+                *ngIf="editingId !== null"
+                (click)="cancelEdit()"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- TABLE -->
+    <!-- ========================= -->
+
+    <div class="col-lg-8">
+      <div class="card table-card">
+        <div class="card-header table-header">
+          <h5>Payment Method List</h5>
+
+          <button
+            class="btn btn-sm btn-outline-primary"
+            (click)="loadPaymentMethods()"
+          >
+            Refresh
+          </button>
+        </div>
+
+        <div class="card-body p-0">
+          <!-- LOADING -->
+
+          <div class="loading" *ngIf="loading">Loading payment methods...</div>
+
+          <!-- TABLE -->
+
+          <div class="table-responsive" *ngIf="!loading">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>#</th>
+
+                  <th>Name</th>
+
+                  <th>Ledger Account</th>
+
+                  <th>Status</th>
+
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let paymentMethod of (paymentMethods | slice:(pageIndex * pageSize):((pageIndex + 1) * pageSize)); let i = index">
+                  <td>
+                    {{ pageIndex * pageSize + i + 1 }}
+                  </td>
+
+                  <td>
+                    <strong>
+                      {{ paymentMethod.name }}
+                    </strong>
+                  </td>
+
+                  <td>
+                    {{ paymentMethod.ledgerAccountCode || "Not mapped" }}
+                  </td>
+
+                  <td>
+                    <span class="status active" *ngIf="paymentMethod.isActive">
+                      Active
+                    </span>
+
+                    <span
+                      class="status inactive"
+                      *ngIf="!paymentMethod.isActive"
+                    >
+                      Inactive
+                    </span>
+                  </td>
+
+                  <td>
+                    <button
+                      class="btn btn-sm btn-warning me-2"
+                      (click)="editPaymentMethod(paymentMethod)"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      class="btn btn-sm btn-danger"
+                      *ngIf="paymentMethod.isActive"
+                      (click)="deletePaymentMethod(paymentMethod.id)"
+                    >
+                      Deactivate
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- EMPTY -->
+
+                <tr *ngIf="paymentMethods.length === 0">
+                  <td colspan="5" class="text-center empty">
+                    No payment methods found.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <app-pagination [totalItems]="paymentMethods.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

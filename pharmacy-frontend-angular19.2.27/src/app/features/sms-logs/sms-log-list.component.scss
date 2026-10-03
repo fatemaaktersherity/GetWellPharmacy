@@ -1,0 +1,94 @@
+.page-header {
+    margin-bottom: 24px;
+}
+
+.filter-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 8px;
+
+    mat-form-field {
+        flex: 1 1 180px;
+    }
+}
+
+.summary {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 12px;
+
+    mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        vertical-align: middle;
+    }
+
+    .ok {
+        color: #2e7d32;
+    }
+
+    .fail {
+        color: #c62828;
+    }
+}
+
+.message-cell {
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+
+    mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+    }
+
+    &.ok {
+        color: #2e7d32;
+    }
+
+    &.fail {
+        color: #c62828;
+    }
+}
+
+.empty {
+    padding: 24px;
+    text-align: center;
+    color: #888;
+}
+
+.purge-card {
+    margin-top: 20px;
+}
+
+.purge-copy {
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.purge-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.purge-days {
+    width: 200px;
+}

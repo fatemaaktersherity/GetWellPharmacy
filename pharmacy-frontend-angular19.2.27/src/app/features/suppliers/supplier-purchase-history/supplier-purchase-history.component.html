@@ -1,0 +1,80 @@
+<div class="page-header">
+  <div>
+    <h1>{{ supplier?.supplierName || "Supplier" }} — Purchase History</h1>
+    <p>Every purchase invoice recorded against this supplier.</p>
+  </div>
+  <a mat-stroked-button routerLink="/suppliers"><mat-icon>arrow_back</mat-icon> Back to Suppliers</a>
+</div>
+
+<div class="summary-row">
+  <mat-card class="summary-card"><span class="label">Total Purchased</span><strong>{{ totalPurchased | currency: "BDT "
+      }}</strong></mat-card>
+  <mat-card class="summary-card"><span class="label">Total Outstanding Due</span><strong [class.due]="totalDue > 0">{{
+      totalDue | currency: "BDT "
+      }}</strong></mat-card>
+  <mat-card class="summary-card"><span class="label">Invoices</span><strong>{{ invoices.length }}</strong></mat-card>
+</div>
+
+@for (inv of invoices; track inv.id) {
+<mat-expansion-panel class="invoice-panel">
+  <mat-expansion-panel-header>
+    <mat-panel-title>{{ inv.invoiceNo }}
+      <small>{{
+        inv.purchaseDate | date: "mediumDate"
+        }}</small></mat-panel-title>
+    <mat-panel-description>
+      Total {{ inv.total | currency: "BDT " }}
+      @if (inv.due > 0) {
+      <span class="due-tag">Due {{ inv.due | currency: "BDT " }}</span>
+      } @else {
+      <span class="paid-tag">Paid</span>
+      }
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+
+  <table class="item-table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Batch</th>
+        <th>Expiry</th>
+        <th>Mfg. Date</th>
+        <th>Qty</th>
+        <th>Unit</th>
+        <th>Unit Cost</th>
+        <th>Line Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of inv.items; track item.id) {
+      <tr>
+        <td>{{ item.productName }}</td>
+        <td>{{ item.batchNumber || "-" }}</td>
+        <td>
+          {{
+          item.expiryDate ? (item.expiryDate | date: "mediumDate") : "-"
+          }}
+        </td>
+        <td>
+          {{
+          item.manufacturingDate
+          ? (item.manufacturingDate | date: "mediumDate")
+          : "-"
+          }}
+        </td>
+        <td>{{ item.receivedQty }}</td>
+        <td>{{ item.unitName }}</td>
+        <td>{{ item.unitCost | currency: "BDT " }}</td>
+        <td>{{ item.receivedQty * item.unitCost | currency: "BDT " }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (receiptUrl(inv.receiptImagePath); as url) {
+  <a class="receipt-link" [href]="url" target="_blank"><mat-icon>image</mat-icon> View Receipt</a>
+  }
+</mat-expansion-panel>
+} @empty {
+<div class="empty">No purchase history recorded for this supplier yet.</div>
+}

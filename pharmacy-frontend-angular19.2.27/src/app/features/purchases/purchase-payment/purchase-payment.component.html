@@ -1,0 +1,34 @@
+<div class="page-header">
+  <div><h1>Supplier Payment</h1><p>Settle an outstanding purchase invoice.</p></div>
+  <a mat-stroked-button routerLink="/purchases"><mat-icon>arrow_back</mat-icon> Back to purchases</a>
+</div>
+
+@if (purchase) {
+  <div class="payment-layout">
+    <mat-card>
+      <mat-card-header><mat-card-title>Invoice summary</mat-card-title></mat-card-header>
+      <mat-card-content class="summary">
+        <div><span>Invoice</span><strong>{{ purchase.invoiceNo }}</strong></div>
+        <div><span>Supplier</span><strong>{{ purchase.supplierName || purchase.supplierId }}</strong></div>
+        <div><span>Purchase date</span><strong>{{ purchase.purchaseDate | date:'mediumDate' }}</strong></div>
+        <div><span>Total</span><strong>{{ purchase.total | currency:'BDT ':'symbol':'1.0-2' }}</strong></div>
+        <div><span>Already paid</span><strong>{{ purchase.advance | currency:'BDT ':'symbol':'1.0-2' }}</strong></div>
+        <div class="due"><span>Remaining due</span><strong>{{ purchase.due | currency:'BDT ':'symbol':'1.0-2' }}</strong></div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-header><mat-card-title>Record payment</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="submit()" class="payment-form">
+          <mat-form-field appearance="outline"><mat-label>Payment voucher no.</mat-label><input matInput formControlName="paidNo"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Payment date</mat-label><input matInput type="date" formControlName="paidDate"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Payment method</mat-label><mat-select formControlName="paymentMethod">@for (method of paymentMethods; track method.id) { <mat-option [value]="method.name">{{ method.name }}</mat-option> }</mat-select></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Payment amount</mat-label><input matInput type="number" min="0.01" [max]="purchase.due" formControlName="amount"><mat-hint>Maximum: {{ purchase.due | currency:'BDT ':'symbol':'1.0-2' }}</mat-hint>@if (form.controls.amount.hasError('exceedsDue')) { <mat-error>Amount cannot exceed the remaining due.</mat-error> }</mat-form-field>
+          <p class="help">Enter the full remaining due to mark this invoice as <strong>Complete</strong>. A smaller amount records a partial payment.</p>
+          <button mat-raised-button color="primary" type="submit" [disabled]="saving"> <mat-icon>payments</mat-icon> {{ saving ? 'Saving…' : 'Record Payment' }}</button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+}

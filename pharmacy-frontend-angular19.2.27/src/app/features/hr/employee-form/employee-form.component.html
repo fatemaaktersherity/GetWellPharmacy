@@ -1,0 +1,88 @@
+<div class="page-header">
+  <div>
+    <h1>{{ isEditMode ? "Edit Employee" : "New Employee" }}</h1>
+    <p>
+      {{
+        isEditMode
+          ? "Update this staff member's details."
+          : "Add a staff member and optionally attach a photo."
+      }}
+    </p>
+  </div>
+  <a mat-stroked-button routerLink="/employees"
+    ><mat-icon>arrow_back</mat-icon> Back</a
+  >
+</div>
+
+@if (loading) {
+  <mat-card><mat-card-content>Loading employee...</mat-card-content></mat-card>
+} @else {
+  <mat-card
+    ><mat-card-content
+      ><form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+        <mat-form-field
+          ><mat-label>Full name *</mat-label
+          ><input matInput formControlName="fullName"
+        /></mat-form-field>
+        <mat-form-field
+          ><mat-label>Email</mat-label
+          ><input matInput type="email" formControlName="email"
+        /></mat-form-field>
+        <mat-form-field
+          ><mat-label>Department *</mat-label
+          ><mat-select formControlName="departmentId">
+            @for (department of departments; track department.id) {
+              <mat-option [value]="department.id">{{
+                department.name
+              }}</mat-option>
+            }
+          </mat-select></mat-form-field
+        >
+        <mat-form-field
+          ><mat-label>Salary</mat-label
+          ><input matInput type="number" min="0" formControlName="salary"
+        /></mat-form-field>
+        <mat-form-field
+          ><mat-label>Joining date *</mat-label
+          ><input matInput type="date" formControlName="hireDate"
+        /></mat-form-field>
+        <div class="status-toggle">
+          <mat-slide-toggle formControlName="isActive">{{
+            form.value.isActive ? "Active" : "Inactive"
+          }}</mat-slide-toggle>
+        </div>
+        <div class="photo-picker">
+          <label for="employee-photo">Employee photo</label>
+          <input
+            id="employee-photo"
+            type="file"
+            accept="image/*"
+            (change)="selectPhoto($event)"
+          />
+          @if (preview) {
+            <img [src]="preview" alt="Employee photo preview" />
+          } @else if (existingPhotoUrl) {
+            <img [src]="existingPhotoUrl" alt="Current employee photo" />
+          }
+        </div>
+        <div class="actions">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="saving"
+          >
+            {{
+              saving
+                ? "Saving..."
+                : isEditMode
+                  ? "Save Changes"
+                  : "Create Employee"
+            }}
+          </button>
+          <a mat-button routerLink="/employees">Cancel</a>
+        </div>
+      </form></mat-card-content
+    ></mat-card
+  >
+}

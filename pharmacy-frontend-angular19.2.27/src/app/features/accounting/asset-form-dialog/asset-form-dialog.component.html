@@ -1,0 +1,71 @@
+<h2 mat-dialog-title class="dialog-title">
+  {{ isEdit ? "Edit Company Asset" : "Add Company Asset" }}
+  <button
+    mat-icon-button
+    type="button"
+    class="close-btn"
+    (click)="close()"
+    aria-label="Close"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</h2>
+<mat-dialog-content [formGroup]="form">
+  <mat-form-field appearance="outline" class="full-width"
+    ><mat-label>Asset name</mat-label
+    ><input matInput formControlName="name" placeholder="e.g. Delivery Van"
+  /></mat-form-field>
+  <mat-form-field appearance="outline" class="full-width"
+    ><mat-label>Acquired date</mat-label
+    ><input matInput type="date" formControlName="acquiredDate"
+  /></mat-form-field>
+  <mat-form-field appearance="outline" class="full-width"
+    ><mat-label>Purchase value</mat-label
+    ><input matInput type="number" formControlName="value" min="0" step="0.01"
+  /></mat-form-field>
+  <mat-form-field appearance="outline" class="full-width"
+    ><mat-label>Salvage value</mat-label
+    ><input
+      matInput
+      type="number"
+      formControlName="salvageValue"
+      min="0"
+      step="0.01"
+  /></mat-form-field>
+  <mat-form-field appearance="outline" class="full-width"
+    ><mat-label>Useful life (years)</mat-label
+    ><input matInput type="number" formControlName="usefulLifeYears" min="0"
+  /></mat-form-field>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Depreciation method</mat-label>
+    <mat-select formControlName="depreciationMethod">
+      @for (m of depreciationMethods; track m.value) {
+        <mat-option [value]="m.value">{{ m.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  @if (form.value.depreciationMethod === 1) {
+    <mat-form-field appearance="outline" class="full-width"
+      ><mat-label>Depreciation rate (%)</mat-label
+      ><input
+        matInput
+        type="number"
+        formControlName="depreciationRatePercent"
+        min="0"
+        max="100"
+    /></mat-form-field>
+  }
+  <mat-form-field appearance="outline" class="full-width"
+    ><mat-label>Description</mat-label
+    ><textarea matInput formControlName="description" rows="2"></textarea>
+  </mat-form-field>
+  <mat-checkbox formControlName="isActive" class="active-checkbox">
+    Active
+  </mat-checkbox>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="close()">Cancel</button>
+  <button mat-raised-button color="primary" type="button" (click)="save()">
+    {{ isEdit ? "Save Changes" : "Add Asset" }}
+  </button>
+</mat-dialog-actions>

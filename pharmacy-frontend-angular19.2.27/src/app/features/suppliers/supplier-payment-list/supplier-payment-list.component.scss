@@ -1,0 +1,9 @@
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.table-wrap { overflow-x: auto; }
+.badge { padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+.badge.active { background: #e6f4ea; color: #1e7e34; }
+.badge.inactive { background: #fde8e8; color: #c0392b; }
+.detail-row td { padding: 0 16px 12px; background: #fafafa; }
+.detail-rows table { width: 100%; font-size: 12.5px; border-collapse: collapse; }
+.detail-rows th, .detail-rows td { text-align: left; padding: 4px 8px; }
+.empty { padding: 24px; text-align: center; color: #777; }

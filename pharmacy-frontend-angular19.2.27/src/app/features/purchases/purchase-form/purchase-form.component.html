@@ -1,0 +1,167 @@
+<div class="page-header">
+  <h1>{{ id ? "Edit Purchase" : "New Purchase" }}</h1>
+</div>
+
+@if (id && isAdmin) {
+<mat-card class="admin-unlock-card">
+  <mat-card-content>
+    <mat-checkbox [checked]="editMoneyFields" (change)="toggleMoneyEditing($event.checked)">
+      Full edit mode (Admin) — unlock receiving quantity, cost, discount, paid
+      amount, tax/other, and payment method
+    </mat-checkbox>
+    @if (editMoneyFields) {
+    <p class="admin-unlock-hint">
+      Saving now recalculates totals and reconciles the accounting ledger
+      for this invoice.
+    </p>
+    }
+  </mat-card-content>
+</mat-card>
+}
+
+<mat-card><mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+      <section class="purchase-order-section">
+        @if (!id) {
+        <mat-form-field>
+          <mat-label>Purchase Order</mat-label>
+          <mat-select formControlName="purchaseOrderId" (selectionChange)="onPurchaseOrderSelected($event.value)"
+            required>
+            @for (po of purchaseOrders; track po.id) {
+            <mat-option [value]="po.id">{{ po.orderNo }} — {{ po.supplierName
+              }}{{
+              po.supplierTypeName ? " (" + po.supplierTypeName + ")" : ""
+              }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>Select the purchase order you are receiving.</mat-error>
+        </mat-form-field>
+        } @else if (purchaseOrderNo) {
+        <div class="readonly-info">
+          <small>Purchase Order</small>
+          <strong>{{ purchaseOrderNo }}</strong>
+        </div>
+        }
+
+        @if (!id) {
+        <p class="po-hint">
+          Selecting an order loads its items. Order Qty is fixed from the
+          order — enter the Receiving Qty that actually arrived.
+        </p>
+        }
+      </section>
+
+      <section formArrayName="items" class="items">
+        <h3>Items</h3>
+        @if (!items.length) {
+        <p class="empty-hint">Select a purchase order to load its items.</p>
+        } @else if (!id) {
+        <p class="empty-hint">
+          {{ items.length }} item{{ items.length === 1 ? "" : "s" }} loaded
+          from this purchase order.
+        </p>
+        }
+        @for (item of items.controls; track $index; let i = $index) {
+        <div [formGroupName]="i" class="line" [class.cancelled]="item.get('isCancelled')?.value">
+          <div class="line-title">
+            <strong>{{ item.get("productName")?.value }}</strong>
+            @if (item.get("unitName")?.value) {
+            <span class="unit-tag">{{ item.get("unitName")?.value }}</span>
+            }
+            @if (item.get("isCancelled")?.value) {
+            <span class="cancelled-tag">Cancelled in purchase order — not received</span>
+            }
+            <span class="line-total">Line total: {{ lineTotal(item) | number: "1.2-2" }}</span>
+          </div>
+          <mat-form-field><mat-label>Batch</mat-label><input matInput formControlName="batchNumber" /></mat-form-field>
+          <mat-form-field><mat-label>Expiry</mat-label><input matInput type="date"
+              formControlName="expiryDate" /></mat-form-field>
+          <mat-form-field><mat-label>Manufacture</mat-label><input matInput type="date"
+              formControlName="manufacturingDate" /></mat-form-field>
+          <mat-form-field><mat-label>Order Qty</mat-label><input matInput type="number" formControlName="orderQty"
+              readonly /></mat-form-field>
+          <mat-form-field><mat-label>Receiving Qty</mat-label><input matInput type="number" min="0"
+              formControlName="receivedQty" />
+            <mat-error>Enter a quantity greater than 0.</mat-error>
+          </mat-form-field>
+          <mat-form-field><mat-label>Cost</mat-label><input matInput type="number" min="0"
+              formControlName="unitCost" /></mat-form-field>
+        </div>
+        }
+      </section>
+
+      <section class="purchase-info">
+        @if (id) {
+        <mat-form-field><mat-label>Invoice no.</mat-label><input matInput formControlName="invoiceNo"
+            readonly /></mat-form-field>
+        }
+        <mat-form-field><mat-label>Date</mat-label><input matInput type="date"
+            formControlName="purchaseDate" /></mat-form-field>
+        <mat-form-field><mat-label>Warehouse</mat-label><mat-select formControlName="warehouseId" required>
+            @for (w of warehouses; track w.warehouseId) {
+            <mat-option [value]="w.warehouseId">{{
+              w.warehouseName
+              }}</mat-option>
+            }
+          </mat-select></mat-form-field>
+        <mat-form-field><mat-label>Paid now</mat-label><input matInput type="number" min="0"
+            formControlName="advance" /></mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Receiving Status</mat-label>
+          <mat-select formControlName="receivingStatus" required>
+            <mat-option value="Completed">Completed</mat-option>
+            <mat-option value="Partially Received">Partially Received</mat-option>
+          </mat-select>
+        </mat-form-field>
+        @if (items.length) {
+        <div class="payment-status-field">
+          <label>Payment Status</label>
+          <mat-checkbox [checked]="due <= 0" disabled>
+            {{ due <= 0 ? "Complete" : "Incomplete" }}
+          </mat-checkbox>
+        </div>
+        }
+        <mat-form-field><mat-label>Discount</mat-label><input matInput type="number" min="0"
+            formControlName="discount" /></mat-form-field>
+        <mat-form-field><mat-label>Tax / Other</mat-label><input matInput type="number" min="0"
+            formControlName="taxOrOthers" /></mat-form-field>
+
+        <div class="payment-methods-field">
+          <mat-form-field>
+            <mat-label>Payment method</mat-label>
+            <mat-select formControlName="paymentMethod" [disabled]="paymentMethodsLocked">
+            @for (m of availablePaymentMethods; track m) {
+              <mat-option [value]="m">{{ m }}</mat-option>
+            }
+            </mat-select>
+            <mat-hint>Record additional installments from Supplier Payment using their own method.</mat-hint>
+          </mat-form-field>
+        </div>
+        <div>
+          <label>Invoice / Receipt Image</label><input type="file" accept="image/*" (change)="selectReceipt($event)" />
+          @if (receiptPreview) {
+          <a [href]="receiptPreview" target="_blank"><img class="photo-thumb" [src]="receiptPreview"
+              alt="Receipt preview" /></a>
+          }
+        </div>
+      </section>
+
+      <div class="totals">
+        <strong>Total: {{ total | number: "1.2-2" }} &nbsp; Due:
+          {{ due | number: "1.2-2" }}</strong>
+      </div>
+      <div class="purchase-actions">
+        @if (id && receiptFile) {
+        <button mat-stroked-button type="button" (click)="uploadReceiptOnly()" [disabled]="saving">
+          <mat-icon>upload</mat-icon> Upload Receipt Only
+        </button>
+        }
+        <button mat-raised-button color="primary" type="submit" [disabled]="saving">
+          Save Purchase</button>
+        <button mat-stroked-button type="button" (click)="save(true)" [disabled]="saving">
+          <mat-icon>print</mat-icon> Save &amp; Print
+        </button>
+        <a mat-button routerLink="/purchases">Cancel</a>
+      </div>
+    </form>
+  </mat-card-content></mat-card>

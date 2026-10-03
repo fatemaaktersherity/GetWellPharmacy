@@ -1,0 +1,114 @@
+<div class="page-header">
+  <div>
+    <h1>Purchase Orders</h1>
+    <p>Manual and auto-generated reorder requests.</p>
+  </div>
+  <a mat-raised-button color="primary" routerLink="/purchase-orders/new"
+    ><mat-icon>add</mat-icon> New Purchase Order</a
+  >
+</div>
+<mat-card
+  ><mat-card-content class="table-wrap">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search purchase orders</mat-label>
+      <input
+        matInput
+        [formControl]="searchControl"
+        placeholder="Search order no, supplier, status"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <table mat-table [dataSource]="filteredOrders | slice:(pageIndex * pageSize):((pageIndex + 1) * pageSize)">
+      <ng-container matColumnDef="orderNo">
+        <th mat-header-cell *matHeaderCellDef>Order No</th>
+        <td mat-cell *matCellDef="let o">{{ o.orderNo }}</td>
+      </ng-container>
+      <ng-container matColumnDef="supplier">
+        <th mat-header-cell *matHeaderCellDef>Supplier</th>
+        <td mat-cell *matCellDef="let o">
+          {{ o.supplierName || o.supplierId }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="orderDate">
+        <th mat-header-cell *matHeaderCellDef>Order Date</th>
+        <td mat-cell *matCellDef="let o">
+          {{ o.orderDate | date: "mediumDate" }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="requirementDate">
+        <th mat-header-cell *matHeaderCellDef>Required By</th>
+        <td mat-cell *matCellDef="let o">
+          {{
+            o.requirementDate ? (o.requirementDate | date: "mediumDate") : "-"
+          }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="source">
+        <th mat-header-cell *matHeaderCellDef>Source</th>
+        <td mat-cell *matCellDef="let o">
+          {{ sourceLabel(o.source) }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let o">
+          <span class="badge" [class]="'status-' + o.status">{{
+            statusLabel(o.status)
+          }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="urgent">
+        <th mat-header-cell *matHeaderCellDef>Urgent</th>
+        <td mat-cell *matCellDef="let o">
+          @if (o.isUrgent) {
+            <mat-icon color="warn" title="Urgent">priority_high</mat-icon>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="receipt">
+        <th mat-header-cell *matHeaderCellDef>Receipt</th>
+        <td mat-cell *matCellDef="let o">
+          @if (receiptUrl(o.receiptImagePath); as receiptUrl) {
+            <a class="photo-link" [href]="receiptUrl" target="_blank"
+              ><mat-icon>image</mat-icon> View</a
+            >
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let o">
+          <a
+            mat-icon-button
+            [routerLink]="['/purchase-orders', o.id]"
+            aria-label="View purchase order"
+            title="View"
+            ><mat-icon>visibility</mat-icon></a
+          ><a
+            mat-icon-button
+            [routerLink]="['/purchase-orders/edit', o.id]"
+            aria-label="Edit purchase order"
+            title="Edit"
+            ><mat-icon>edit</mat-icon></a
+          ><button
+            mat-icon-button
+            color="warn"
+            (click)="delete(o.id)"
+            aria-label="Delete purchase order"
+            title="Delete"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="cols"></tr>
+      <tr mat-row *matRowDef="let row; columns: cols"></tr>
+    </table>
+    <app-pagination [totalItems]="filteredOrders.length" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize"></app-pagination>
+    @if (!filteredOrders.length) {
+      <div class="empty">No matching purchase orders found.</div>
+    }
+  </mat-card-content></mat-card
+>

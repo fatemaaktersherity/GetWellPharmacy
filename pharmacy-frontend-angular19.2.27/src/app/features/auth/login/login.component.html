@@ -1,0 +1,71 @@
+<div class="login-container">
+  <div class="medical-shell" aria-hidden="true">
+    <div class="orb orb-left">
+      <mat-icon>vaccines</mat-icon>
+    </div>
+    <div class="orb orb-right">
+      <mat-icon>medication</mat-icon>
+    </div>
+    <div class="cross cross-one">+</div>
+    <div class="cross cross-two">+</div>
+    <div class="pulse-line"></div>
+  </div>
+
+  <mat-card class="login-card">
+    <div class="brand-mark">
+      <mat-icon>local_pharmacy</mat-icon>
+    </div>
+
+    <mat-card-header>
+      <mat-card-title>Welcome Back</mat-card-title>
+      <mat-card-subtitle>Get Well Medical Shop Management</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email / Username / Phone</mat-label>
+          <input matInput formControlName="username" name="pharmacy-login-user" autocomplete="off" readonly
+            onfocus="this.removeAttribute('readonly')">
+          @if (loginForm.controls.username.hasError('required')) {
+          <mat-error>Email, username, or phone is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password"
+            name="pharmacy-login-pass" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+          <button mat-icon-button matSuffix type="button" class="password-toggle" (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (loginForm.controls.password.hasError('required')) {
+          <mat-error>Password is required</mat-error>
+          }
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" class="login-button" type="submit" [disabled]="loading">
+          @if (loading) {
+          <mat-spinner diameter="22"></mat-spinner>
+          } @else {
+          <ng-container>
+            <mat-icon>login</mat-icon>
+            Sign In
+          </ng-container>
+          }
+        </button>
+
+        @if (errorMessage) {
+        <p class="auth-error">{{ errorMessage }}</p>
+        }
+      </form>
+
+      <div class="login-links">
+        <button mat-button type="button" (click)="goToForgotPassword()">Forgot Password?</button>
+        <span>Don't have an account?</span>
+        <button mat-button color="primary" type="button" (click)="openRegister()">Register</button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

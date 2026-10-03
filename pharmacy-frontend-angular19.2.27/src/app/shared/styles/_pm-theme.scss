@@ -1,0 +1,122 @@
+// Design tokens lifted from payment-methods.component.css — the layout the
+// user asked every other page to match. Kept as a shared partial so the
+// Sales pages (and anything else restyled later) pull from one source
+// instead of re-declaring the same colors/radii everywhere.
+
+$pm-primary: #5b6cff;
+$pm-primary-dark: #4757e6;
+$pm-primary-tint: #f2f3ff;
+$pm-primary-border: #d6dafc;
+
+$pm-text: #1b1f2a;
+$pm-text-muted: #7a8296;
+$pm-text-soft: #3a4256;
+$pm-text-faint: #9aa0b4;
+
+$pm-border: #eceff5;
+$pm-border-light: #f0f2f8;
+$pm-bg-page: #f4f6fb;
+$pm-bg-input: #fbfcfe;
+$pm-bg-head: #f7f8fc;
+$pm-bg-row-hover: #f7f9ff;
+
+$pm-radius: 14px;
+$pm-radius-sm: 9px;
+$pm-shadow: 0 4px 18px rgba(30, 41, 59, 0.06);
+
+$pm-success-bg: #e7f8ee;
+$pm-success-text: #167a44;
+$pm-success-dot: #2fb866;
+$pm-danger-bg: #fdecec;
+$pm-danger-text: #c62828;
+$pm-danger-dot: #e5484d;
+$pm-warning-bg: #fff3d6;
+$pm-warning-text: #92650a;
+
+@mixin pm-card {
+  background: #fff;
+  border: 1px solid $pm-border;
+  border-radius: $pm-radius;
+  box-shadow: $pm-shadow;
+}
+
+@mixin pm-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: $pm-text;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: $pm-text-muted;
+    font-size: 14px;
+  }
+}
+
+@mixin pm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  thead th {
+    background: $pm-bg-head;
+    color: #6b7284;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+    padding: 14px 16px;
+    white-space: nowrap;
+    border-bottom: 1px solid $pm-border;
+  }
+
+  td {
+    padding: 12px 16px;
+    vertical-align: middle;
+    color: #262b38;
+    border-bottom: 1px solid $pm-border-light;
+  }
+
+  tbody tr {
+    transition: background 0.12s ease;
+  }
+
+  tbody tr:hover {
+    background: $pm-bg-row-hover;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+@mixin pm-status-pill($bg, $text, $dot) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: $bg;
+  color: $text;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: $dot;
+  }
+}

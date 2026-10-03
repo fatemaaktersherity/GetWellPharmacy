@@ -1,0 +1,15 @@
+@if (totalItems > 0 || showWhenEmpty) {
+<nav class="pagination" aria-label="Pagination">
+  <span class="range">{{ firstItem }}–{{ lastItem }} of {{ totalItems }}</span>
+  <label class="page-size">Rows per page
+    <select [value]="pageSize" (change)="setPageSize($event)" aria-label="Rows per page">
+      @for (size of pageSizes; track size) {
+        <option [value]="size">{{ size }}</option>
+      }
+    </select>
+  </label>
+  <button type="button" class="page-button" (click)="previous()" [disabled]="pageIndex === 0" aria-label="Previous page">‹</button>
+  <span class="page-number">Page {{ pageIndex + 1 }} of {{ pageCount }}</span>
+  <button type="button" class="page-button" (click)="next()" [disabled]="pageIndex + 1 >= pageCount" aria-label="Next page">›</button>
+</nav>
+}

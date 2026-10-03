@@ -1,0 +1,24 @@
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+.page-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.create-transfer-card { margin-bottom: 20px; }
+.create-transfer-card mat-card-header { margin-bottom: 16px; }
+.create-transfer-fields { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 12px; }
+.transfer-line { display: flex; align-items: flex-start; gap: 12px; }
+.batch-field { flex: 1; }
+.quantity-field { width: 160px; }
+.create-transfer-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 8px; }
+.search-field { min-width: 240px; flex: 1; }
+.transfers-table { width: 100%; }
+.transfers-table a { text-decoration: none; }
+.transfers-table a:hover { text-decoration: none; }
+.empty { padding: 24px; text-align: center; color: rgba(0, 0, 0, 0.54); }
+@media (max-width: 800px) {
+  .create-transfer-fields { grid-template-columns: 1fr; gap: 0; }
+  .transfer-line { flex-wrap: wrap; }
+  .batch-field { min-width: calc(100% - 56px); }
+}

@@ -1,0 +1,759 @@
+@use "../../../shared/styles/pm-theme" as pm;
+
+:host {
+    display: block;
+    background: pm.$pm-bg-page;
+    margin: -24px;
+    padding: 24px;
+    min-height: calc(100vh - 64px);
+    box-sizing: border-box;
+}
+
+// Reskin Material cards to match the Payment Methods page look — white,
+// rounded, subtle shadow, no default Material elevation ring.
+::ng-deep .sale-grid .mat-mdc-card {
+    @include pm.pm-card;
+    padding: 8px;
+}
+
+::ng-deep .mat-mdc-card-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: pm.$pm-text;
+}
+
+.page-header {
+    @include pm.pm-page-header;
+}
+
+.sale-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.sale-grid > mat-card:last-child form {
+    padding-top: 8px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+.items-table {
+    @include pm.pm-table;
+    margin-top: 16px;
+    border: 1px solid pm.$pm-border;
+    border-radius: pm.$pm-radius-sm;
+    overflow: hidden;
+}
+
+.grand-total {
+    text-align: right;
+    color: pm.$pm-primary;
+    margin-top: 20px;
+    font-weight: 700;
+}
+
+.full-width {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.summary {
+    background: pm.$pm-bg-page;
+    padding: 16px;
+    border-radius: pm.$pm-radius-sm;
+    margin: 16px 0;
+    border: 1px solid pm.$pm-border;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.summary-row.total {
+    font-size: 18px;
+    border-top: 2px solid pm.$pm-border;
+    padding-top: 10px;
+    color: pm.$pm-text;
+}
+
+.summary-note {
+    font-size: 12px;
+    color: pm.$pm-text-faint;
+    margin: 8px 0 0;
+}
+
+.checkout-btn {
+    width: 100%;
+    min-height: 48px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    background: pm.$pm-primary !important;
+    box-shadow: 0 4px 14px rgba(91, 108, 255, 0.35) !important;
+    transition: transform 0.12s ease, box-shadow 0.15s ease;
+}
+
+.checkout-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(91, 108, 255, 0.42) !important;
+}
+
+.empty {
+    text-align: center;
+    color: pm.$pm-text-muted;
+    padding: 28px;
+    font-size: 13px;
+}
+
+.option-product,
+.line-product {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.option-product img,
+.line-product img,
+.line-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.option-product mat-icon,
+.line-placeholder {
+    display: grid;
+    place-items: center;
+    color: pm.$pm-primary;
+    background: pm.$pm-primary-tint;
+    border-radius: 6px;
+}
+
+// ---- Selected product preview card ----
+
+.selected-product-preview {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: pm.$pm-bg-page;
+    border: 1px solid pm.$pm-border;
+    border-radius: pm.$pm-radius-sm;
+    padding: 16px;
+    margin: 14px 0;
+}
+
+.selected-product-preview img,
+.image-placeholder {
+    width: 68px;
+    height: 68px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.image-placeholder {
+    display: grid;
+    place-items: center;
+    background: pm.$pm-primary-tint;
+    color: pm.$pm-primary;
+}
+
+.preview-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    flex: 1;
+}
+
+.preview-title {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.preview-title strong {
+    font-size: 16px;
+    color: pm.$pm-text;
+}
+
+.preview-title .dosage-form {
+    font-size: 12px;
+    color: pm.$pm-text-muted;
+    font-weight: 500;
+    background: #fff;
+    border: 1px solid pm.$pm-border;
+    border-radius: 999px;
+    padding: 2px 10px;
+}
+
+.preview-generic {
+    color: pm.$pm-primary;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.preview-supplier {
+    color: pm.$pm-text-soft;
+    font-size: 13px;
+}
+
+.preview-meta {
+    color: pm.$pm-text-soft;
+    font-size: 13px;
+}
+
+.preview-meta .dot {
+    margin: 0 6px;
+    color: pm.$pm-text-faint;
+}
+
+.preview-prices {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: pm.$pm-text-soft;
+    margin-top: 2px;
+}
+
+.preview-prices span {
+    background: #fff;
+    border: 1px solid pm.$pm-border;
+    border-radius: 999px;
+    padding: 3px 10px;
+}
+
+.selected-product-preview small {
+    color: pm.$pm-text-faint;
+    font-size: 12px;
+}
+
+.preview-rx {
+    margin: 2px 0;
+}
+
+.rx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 11px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: pm.$pm-success-bg;
+    color: pm.$pm-success-text;
+}
+
+.rx-badge.rx-yes {
+    background: pm.$pm-danger-bg;
+    color: pm.$pm-danger-text;
+}
+
+.product-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.alt-brands-btn {
+    align-self: flex-start;
+}
+
+.also-available {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.also-available-label {
+    font-size: 12px;
+    color: pm.$pm-text-muted;
+}
+
+.also-available mat-chip {
+    cursor: pointer;
+}
+
+// ---- Product reference filter row (search + Company/Dosage Form/Strength) ----
+//
+// A CSS grid, not flexbox: the helper hint below the search box can wrap to
+// one or two lines depending on its width, and with flex-wrap the row that
+// hint sits in doesn't reserve space for it correctly, so the row below
+// would overlap it. Grid rows are sized independently per column, so the
+// hint (row 2, column 1 only) can never affect where Company/Dosage
+// Form/Strength (row 1) sit.
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    column-gap: 12px;
+    row-gap: 6px;
+    align-items: start;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid pm.$pm-border;
+}
+
+.search-field-input {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+}
+
+// mat-form-field always reserves its own hint/error strip even when empty.
+// Our helper text below is a plain sibling <div>, not a <mat-hint>, so that
+// reserved strip would just be dead space — collapse it.
+::ng-deep .search-field-input .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+}
+
+.search-field-hint {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: pm.$pm-text-muted;
+    padding: 0 4px;
+}
+
+.search-field-hint mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    margin-top: 1px;
+    color: #f0ad4e;
+    flex-shrink: 0;
+}
+
+.filter-field {
+    grid-row: 1;
+    min-width: 0;
+    width: 100%;
+}
+
+.clear-btn {
+    grid-row: 1;
+    align-self: center;
+    height: 56px;
+    white-space: nowrap;
+    color: pm.$pm-text-soft;
+}
+
+.expiry-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: pm.$pm-text-muted;
+}
+
+.expiry-badge mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.expiry-badge.expiry-soon {
+    color: pm.$pm-danger-text;
+    font-weight: 600;
+}
+
+.batch-picker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0 10px;
+}
+
+.batch-picker-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: pm.$pm-text-faint;
+    cursor: help;
+}
+
+.batch-select {
+    flex: 1;
+    font-family: inherit;
+    font-size: 12.5px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid pm.$pm-border;
+    background: pm.$pm-bg-input;
+    color: pm.$pm-text-soft;
+    transition: border-color 0.15s ease;
+}
+
+.batch-select:focus {
+    outline: none;
+    border-color: pm.$pm-primary;
+}
+
+// ---- Product reference table (click a unit row to add to sale) ----
+
+.ref-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: pm.$pm-text-muted;
+    margin: 4px 0 14px;
+}
+
+.ref-hint mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: pm.$pm-primary;
+}
+
+.product-ref-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.product-ref-card {
+    border: 1px solid pm.$pm-border;
+    border-radius: pm.$pm-radius-sm;
+    padding: 14px 16px;
+    background: #fff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.product-ref-card:hover {
+    box-shadow: 0 2px 10px rgba(30, 41, 59, 0.06);
+}
+
+.product-ref-card.active {
+    border-color: pm.$pm-primary;
+    box-shadow: 0 0 0 3px pm.$pm-primary-tint;
+}
+
+.product-ref-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.product-ref-header img,
+.product-ref-header .line-placeholder {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.product-ref-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.product-ref-title strong {
+    font-size: 14px;
+    color: pm.$pm-text;
+}
+
+.ref-meta {
+    font-size: 12px;
+    color: pm.$pm-text-muted;
+}
+
+.ref-meta .dot {
+    margin: 0 5px;
+    color: pm.$pm-text-faint;
+}
+
+.ref-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ref-table th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: pm.$pm-text-faint;
+    padding: 6px 10px;
+    font-weight: 600;
+}
+
+.ref-row {
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.ref-row td {
+    padding: 9px 10px;
+    font-size: 13px;
+    border-top: 1px solid pm.$pm-border-light;
+}
+
+.ref-row:hover {
+    background: pm.$pm-primary-tint;
+}
+
+.ref-row.ref-row-base td:first-child {
+    font-weight: 600;
+}
+
+.base-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    background: pm.$pm-primary-tint;
+    color: pm.$pm-primary;
+    vertical-align: middle;
+}
+
+// ---- Qty +/- stepper inside the cart (items-table) ----
+
+.qty-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    &:not(:disabled):hover {
+        transform: scale(1.1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+    }
+
+    &:not(:disabled):active {
+        transform: scale(0.92);
+    }
+}
+
+.qty-btn-minus {
+    background: pm.$pm-danger-bg;
+    color: pm.$pm-danger-text;
+}
+
+.qty-btn-minus:not(:disabled):hover {
+    background: #fbdbdb;
+}
+
+.qty-btn-plus {
+    background: pm.$pm-success-bg;
+    color: pm.$pm-success-text;
+}
+
+.qty-btn-plus:not(:disabled):hover {
+    background: #d5f2e0;
+}
+
+.qty-input {
+    width: 42px;
+    text-align: center;
+    border: 1px solid pm.$pm-border;
+    border-radius: 7px;
+    padding: 5px 2px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    color: pm.$pm-text;
+
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.qty-input:focus {
+    outline: none;
+    border-color: pm.$pm-primary;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.scan-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.scan-field {
+    flex: 1 1 320px;
+}
+
+::ng-deep .scan-field .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+}
+
+.scan-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #777;
+
+    mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+    }
+}
+
+.cart-hint,
+.checkout-note {
+    font-size: 12px;
+    color: #777;
+    margin: 8px 0 0;
+}
+
+// ---- Inline "Add new customer" in the Checkout customer field ----
+
+.new-customer-option {
+    color: pm.$pm-primary;
+    font-weight: 600;
+
+    mat-icon {
+        vertical-align: middle;
+        margin-right: 6px;
+        font-size: 20px;
+        height: 20px;
+        width: 20px;
+    }
+}
+
+// Inline phone-number step shown right under the Customer field once
+// "Add as new customer" is picked.
+.add-customer-panel {
+    margin-top: 4px;
+    padding: 12px;
+    border: 1px solid pm.$pm-border;
+    border-radius: pm.$pm-radius-sm;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.add-customer-panel .notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    background: pm.$pm-primary-tint;
+    color: pm.$pm-text;
+}
+
+.add-customer-panel .notice.error {
+    background: pm.$pm-danger-bg;
+    color: pm.$pm-danger-text;
+}
+
+.add-customer-actions {
+    display: flex;
+    gap: 8px;
+}
+
+// ---- Responsiveness ----
+
+@media (max-width: 960px) {
+    .sale-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    :host {
+        margin: -16px;
+        padding: 16px;
+    }
+
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+
+    .search-field-input,
+    .search-field-hint,
+    .filter-field,
+    .clear-btn {
+        grid-column: 1;
+    }
+
+    .clear-btn {
+        height: 44px;
+    }
+
+    .selected-product-preview {
+        flex-direction: column;
+    }
+
+    .product-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .items-table th,
+    .items-table td {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+}
+
+.rx-preview {
+    display: block;
+    max-width: 220px;
+    max-height: 220px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    margin-top: 8px;
+    border: 1px solid #e2e5ee;
+    border-radius: 8px;
+    cursor: zoom-in;
+}

@@ -1,0 +1,76 @@
+@use '../dosage-forms/dosage-form-list.component.scss';
+
+.group-name-link,
+.group-name-link:visited,
+.group-name-link:hover,
+.group-name-link:active {
+    color: #000;
+    text-decoration: none;
+}
+
+.search-field {
+    width: min(400px, 100%);
+    margin-top: 12px;
+}
+
+.content-grid > mat-card:first-child form {
+    padding-top: 8px;
+}
+
+.division-controls,
+.new-division-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.division-controls mat-form-field,
+.new-division-row mat-form-field {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+}
+
+.division-controls button,
+.new-division-row button {
+    flex: 0 0 auto;
+    margin-top: 4px;
+}
+
+td small {
+    color: #667085;
+}
+
+.category-hint { margin: -4px 0 10px; color: #687b7a; font-size: .875rem; }
+.new-category-row { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 16px; }
+.new-category-row mat-form-field { width: 100%; }
+.new-category-row button { align-self: flex-end; margin: 2px 0; }
+.category-help { margin: 0; color: #687b7a; font-size: .8rem; line-height: 1.4; }
+.content-grid > mat-card:first-child .actions { margin-top: 14px; gap: 12px; }
+
+// Inline "manage variants" row, shown in place of navigating to a separate
+// page. Collapsed rows keep zero height/padding so they don't leave a gap
+// or a bordered empty strip in the table when no group is expanded.
+.variants-detail-row {
+    height: 0;
+}
+
+.variants-detail-cell {
+    padding: 0 !important;
+    border-bottom: none !important;
+}
+
+.variants-detail-row--open .variants-detail-cell {
+    border-bottom: 1px solid #EEF0F7 !important;
+}
+
+.variants-detail {
+    overflow: hidden;
+    max-height: 0;
+}
+
+.variants-detail--open {
+    max-height: none;
+    padding: 16px 16px 24px;
+    background: #FAFBFF;
+}

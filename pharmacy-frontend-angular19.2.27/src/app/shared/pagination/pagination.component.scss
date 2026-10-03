@@ -1,0 +1,9 @@
+:host { display:block; }
+.pagination { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:12px; padding:14px 4px 2px; color:#64787b; font-size:13px; }
+.page-size { display:flex; align-items:center; gap:8px; }
+.page-size select { min-width:64px; padding:7px 9px; border:1px solid rgba(42,78,80,.22); border-radius:8px; background:#fff; color:#263b3e; font:inherit; }
+.page-button { width:34px; height:34px; border:1px solid rgba(9,105,97,.25); border-radius:9px; background:#fff; color:#087d72; font-size:22px; line-height:1; cursor:pointer; }
+.page-button:hover:not(:disabled) { background:#eef8f5; }
+.page-button:disabled { opacity:.4; cursor:default; }
+.page-number { min-width:90px; text-align:center; color:#263b3e; }
+@media(max-width:600px) { .pagination { justify-content:center; gap:8px; }.range { flex-basis:100%; text-align:center; } }

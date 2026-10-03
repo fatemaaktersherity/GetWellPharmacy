@@ -1,0 +1,104 @@
+<div class="page-header">
+  <div>
+    <h1>Brand Search</h1>
+    <p>Search by brand or generic name, filter by company, strength, or dosage form.</p>
+  </div>
+  <a mat-raised-button color="primary" routerLink="/brands">
+    <mat-icon>sort_by_alpha</mat-icon> List of Brand Names
+  </a>
+</div>
+
+<mat-card>
+  <mat-card-content>
+    <mat-button-toggle-group class="type-toggle" [formControl]="brandTypeControl">
+      <mat-button-toggle [value]="null">All</mat-button-toggle>
+      <mat-button-toggle value="Allopathic">Allopathic</mat-button-toggle>
+      <mat-button-toggle value="Herbal">Herbal</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search by brand or generic name</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="e.g. Napa or Paracetamol">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <div class="filters-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Company</mat-label>
+        <mat-select [formControl]="companyControl">
+          <mat-option [value]="null">All companies</mat-option>
+          @for (c of companies; track c.id) {
+            <mat-option [value]="c.id">{{ c.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Strength</mat-label>
+        <mat-select [formControl]="strengthControl">
+          <mat-option [value]="null">All strengths</mat-option>
+          @for (s of strengths; track s) {
+            <mat-option [value]="s">{{ s }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Dosage form</mat-label>
+        <mat-select [formControl]="dosageFormControl">
+          <mat-option [value]="null">All dosage forms</mat-option>
+          @for (d of dosageForms; track d.id) {
+            <mat-option [value]="d.id">{{ d.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="clearFilters()">Clear filters</button>
+    </div>
+
+    @if (selectedGeneric) {
+      <div class="generic-results-label">Alternative medicines with generic: <strong>{{ selectedGeneric }}</strong></div>
+    }
+
+    <div class="table-wrap">
+      <table mat-table [dataSource]="results">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Brand Name</th>
+          <td mat-cell *matCellDef="let p">
+            <a class="brand-name-cell" [routerLink]="['/brands', p.id]">
+              @if (imageUrl(p.imagePath); as img) { <img class="row-thumb" [src]="img" [alt]="p.productName"> } @else { <div class="row-thumb placeholder"><mat-icon>medication</mat-icon></div> }
+              <span><strong>{{ p.productName }}</strong>@if (p.genericName) { <small>{{ p.genericName }}</small> }</span>
+            </a>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="strength">
+          <th mat-header-cell *matHeaderCellDef>Strength</th>
+          <td mat-cell *matCellDef="let p">{{ p.strength }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="dosageForm">
+          <th mat-header-cell *matHeaderCellDef>Dosage Form</th>
+          <td mat-cell *matCellDef="let p">{{ p.dosageFormName || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="company">
+          <th mat-header-cell *matHeaderCellDef>Company</th>
+          <td mat-cell *matCellDef="let p">{{ p.companyName || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="price">
+          <th mat-header-cell *matHeaderCellDef>Unit Price</th>
+          <td mat-cell *matCellDef="let p">{{ p.unitName }}: {{ (p.salePrice ?? p.unitPrice) | number:'1.2-2' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columns"></tr>
+        <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+      </table>
+
+      @if (!loading && !results.length) {
+        <div class="empty">No brands matched your search.</div>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>

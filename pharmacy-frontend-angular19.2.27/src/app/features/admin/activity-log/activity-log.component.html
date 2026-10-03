@@ -1,0 +1,37 @@
+<div class="page-header">
+  <div>
+    <h1>Activity Log</h1>
+    <p>Successful sign-ins for all account roles, including cashier, manager, and admin.</p>
+  </div>
+</div>
+
+<mat-card>
+  <mat-card-content>
+    <table mat-table [dataSource]="logs">
+      <ng-container matColumnDef="occurredAtUtc">
+        <th mat-header-cell *matHeaderCellDef>Signed in</th>
+        <td mat-cell *matCellDef="let log">{{ asLocalDate(log.occurredAtUtc) | date: 'dd MMM yyyy, HH:mm:ss' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="user">
+        <th mat-header-cell *matHeaderCellDef>User</th>
+        <td mat-cell *matCellDef="let log"><strong>{{ log.fullName }}</strong><br>{{ log.username }}</td>
+      </ng-container>
+      <ng-container matColumnDef="roleName">
+        <th mat-header-cell *matHeaderCellDef>Role</th>
+        <td mat-cell *matCellDef="let log">{{ log.roleName || '—' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="ipAddress">
+        <th mat-header-cell *matHeaderCellDef>IP address</th>
+        <td mat-cell *matCellDef="let log">{{ log.ipAddress || '—' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="userAgent">
+        <th mat-header-cell *matHeaderCellDef>Device / browser</th>
+        <td mat-cell *matCellDef="let log" class="user-agent">{{ log.userAgent || '—' }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="columns"></tr>
+      <tr mat-row *matRowDef="let row; columns: columns"></tr>
+    </table>
+    @if (!logs.length && !loading) { <p class="empty">No sign-in activity recorded yet.</p> }
+    @if (logs.length) { <p class="hint">Showing the latest {{ logs.length }} sign-ins (maximum 500).</p> }
+  </mat-card-content>
+</mat-card>

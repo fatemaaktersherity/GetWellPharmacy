@@ -1,0 +1,20 @@
+.page-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
+.page-header h1 { margin: 0; }
+.page-header p { margin: 6px 0 0; color: #666; }
+.type-toggle { display: block; margin-bottom: 16px; }
+.search-field { width: min(400px, 100%); }
+.letters-strip { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+.letters-strip button { min-width: 40px; padding: 0 8px; }
+.letters-strip button.active { background: #3f51b5; color: #fff; }
+.brand-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.brand-card { border: 1px solid #e5e5e5; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: inherit; transition: border-color .15s, box-shadow .15s; }
+.brand-card:hover { border-color: #3f51b5; box-shadow: 0 1px 6px rgba(63,81,181,.15); }
+.brand-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; margin-bottom: 6px; }
+.brand-thumb.placeholder { display: grid; place-items: center; background: #e8eefc; color: #3f51b5; }
+.brand-card strong { font-size: 15px; }
+.brand-card .strength { color: #444; font-size: 13px; }
+.brand-card .generic { color: #3f51b5; font-size: 12px; }
+.brand-card .meta { color: #888; font-size: 12px; margin-top: 4px; }
+.empty { padding: 24px; text-align: center; color: #777; }
+.load-more { display: flex; justify-content: center; margin-top: 20px; }
+@media (max-width: 700px) { .page-header { align-items: flex-start; flex-direction: column; } }

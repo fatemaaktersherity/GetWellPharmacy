@@ -1,0 +1,40 @@
+.page-header { margin-bottom: 12px; }
+.state-msg { padding: 60px 24px; text-align: center; color: #777; display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.detail-card { margin-bottom: 20px; }
+
+.detail-top { display: flex; justify-content: space-between; gap: 24px; }
+.titles h1 { margin: 0 0 6px; font-weight: 500; font-size: 24px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.titles .dosage-form { font-size: 15px; font-weight: 400; color: #666; }
+.generic-link { color: #3f51b5; text-decoration: none; font-size: 14px; }
+.generic-link:hover { text-decoration: underline; }
+.strength-company { margin-top: 6px; color: #444; font-size: 14px; }
+.strength-company .dot { margin: 0 6px; color: #bbb; }
+.type-chip-set { margin-top: 10px; }
+.type-chip-set mat-chip { --mdc-chip-elevated-container-color: #e8eaf6; --mdc-chip-label-text-color: #3f51b5; }
+.type-chip-set mat-chip.herbal { --mdc-chip-elevated-container-color: #e6f4ea; --mdc-chip-label-text-color: #1e7e34; }
+
+.pack-image { width: 140px; height: 140px; object-fit: contain; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
+
+.pricing { margin-top: 18px; padding-top: 16px; border-top: 1px solid #eee; display: flex; flex-direction: column; gap: 6px; }
+.price-line { font-size: 15px; }
+.price-line .label { color: #666; margin-right: 6px; }
+.price-line .unit-name { color: #888; font-size: 13px; margin-left: 4px; }
+.price-line .pack-size { display: block; color: #777; font-size: 13px; margin-top: 3px; }
+.inventory-summary { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #eee; }
+.inventory-summary div { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+.inventory-summary span { color: #666; font-size: 13px; }
+.inventory-summary strong { color: #263238; font-size: 16px; }
+.product-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+
+.also-available { margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee; }
+.also-available h3 { margin: 0 0 10px; font-size: 15px; font-weight: 500; color: #444; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.details-grid { display: grid; grid-template-columns: max-content 1fr; gap: 8px 20px; margin: 0; }
+.details-grid dt { font-weight: 500; color: #555; }
+.details-grid dd { margin: 0; color: #333; }
+
+@media (max-width: 700px) {
+  .detail-top { flex-direction: column-reverse; }
+  .pack-image { width: 100%; height: 180px; }
+}

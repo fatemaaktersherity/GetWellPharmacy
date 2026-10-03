@@ -1,0 +1,236 @@
+@use '@angular/material' as mat;
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+
+@include mat.core();
+
+$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$accent: mat.m2-define-palette(mat.$m2-pink-palette, A200, A100, A400);
+$typography: mat.m2-define-typography-config(
+  $font-family: '"DM Sans", Roboto, "Helvetica Neue", sans-serif',
+  $body-1: mat.m2-define-typography-level(15px, 23px, 400),
+  $body-2: mat.m2-define-typography-level(14px, 21px, 500),
+  $headline-5: mat.m2-define-typography-level(30px, 38px, 700),
+  $headline-6: mat.m2-define-typography-level(20px, 28px, 700)
+);
+$theme: mat.m2-define-light-theme((color: (primary: $primary,
+        accent: $accent ),
+      typography: $typography,
+      density: 0));
+
+@include mat.all-component-themes($theme);
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-size: 16px;
+}
+
+body {
+  font-family: "DM Sans", Roboto, "Helvetica Neue", sans-serif;
+  background:
+    radial-gradient(circle at 8% -5%, rgba(104, 221, 190, .24), transparent 30rem),
+    radial-gradient(circle at 98% 0%, rgba(128, 161, 255, .22), transparent 31rem),
+    linear-gradient(135deg, #f4f8fb 0%, #f8fbfc 45%, #eef5f5 100%);
+  color: #182a2c;
+  letter-spacing: .005em;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+a {
+  font-family: inherit;
+}
+
+/* Liquid Glass foundation. Glass is intentionally reserved for navigation,
+   menus, light-weight cards and overlays; clinical data stays opaque. */
+:root {
+  --ink: #172a2d;
+  --muted: #64787b;
+  --line: rgba(48, 84, 86, .13);
+  --glass: rgba(255, 255, 255, .66);
+  --glass-strong: rgba(255, 255, 255, .86);
+  --surface: #ffffff;
+  --teal: #087d72;
+  --teal-dark: #05655d;
+  --blue: #3d69d9;
+  --radius: 16px;
+  --shadow: 0 16px 42px rgba(29, 65, 67, .09), 0 2px 8px rgba(29, 65, 67, .04);
+}
+
+h1, h2, h3, .mat-headline-5, .mat-headline-6 {
+  font-family: Manrope, "DM Sans", sans-serif;
+  color: var(--ink);
+}
+
+h1 { font-size: clamp(1.5rem, 1.1rem + 1vw, 2rem); line-height: 1.2; letter-spacing: -.035em; }
+h2 { font-size: 1.25rem; line-height: 1.3; letter-spacing: -.025em; }
+h3 { font-size: 1.05rem; line-height: 1.35; }
+
+.mat-mdc-form-field { font-size: 15px; }
+.mat-mdc-button, .mat-mdc-raised-button, .mat-mdc-unelevated-button, .mat-mdc-outlined-button { font-weight: 650; letter-spacing: .01em; }
+
+/* Solid clinical surfaces: list, table, form and dialog contents must remain
+   easy to scan even when the translucent shell sits over a colourful backdrop. */
+.mat-mdc-card,
+.mat-mdc-dialog-surface,
+.mat-drawer-container,
+.mat-expansion-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.mat-mdc-card { padding: 4px; }
+
+.mat-mdc-card,
+.mat-expansion-panel,
+.mat-mdc-dialog-surface {
+  background: var(--surface) !important;
+}
+
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-container-shape: 11px;
+  --mdc-outlined-text-field-outline-color: rgba(42, 78, 80, .22);
+  --mdc-outlined-text-field-focus-outline-color: var(--teal);
+  --mdc-outlined-text-field-focus-label-text-color: var(--teal);
+}
+
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary {
+  --mdc-filled-button-container-color: var(--teal);
+  --mdc-filled-button-label-text-color: #fff;
+  border-radius: 10px !important;
+  box-shadow: 0 7px 14px rgba(8, 125, 114, .20) !important;
+}
+
+.mat-mdc-outlined-button {
+  --mdc-outlined-button-outline-color: rgba(9, 105, 97, .30);
+  --mdc-outlined-button-label-text-color: var(--teal-dark);
+  border-radius: 10px !important;
+}
+
+.mat-mdc-menu-panel, .mat-mdc-menu-content {
+  background: rgba(255,255,255,.92) !important;
+  backdrop-filter: blur(20px) saturate(1.3);
+}
+
+.photo-thumb {
+  width: 42px;
+  height: 42px;
+  display: inline-block;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: zoom-in;
+  vertical-align: middle;
+}
+
+.photo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #1565c0;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-weight: 500;
+}
+
+.page-header p {
+  color: #666;
+  margin: 6px 0 0;
+}
+
+.error-snackbar {
+  --mdc-snackbar-container-color: #c62828;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+// ── Data tables ──────────────────────────────────────────────────────────
+// A single, opinionated skin for every Angular Material table in the app:
+// a soft indigo-tinted header with a colored top edge, hairline dividers
+// between cells (not heavy grid lines), gentle zebra striping so dense
+// stock/invoice rows stay scannable, and a hover state for the row a user
+// is currently reading. Applied globally so no table component repeats it.
+
+.mat-mdc-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #DCE8E7;
+  border-top: 3px solid var(--teal);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 7px 22px rgba(30, 65, 65, .05);
+}
+
+.mat-mdc-header-cell {
+  background: #EFF7F6;
+  color: #285555;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #D9E8E6;
+  border-right: 1px solid #E3EEED;
+  white-space: nowrap;
+}
+
+.mat-mdc-header-cell:last-of-type {
+  border-right: none;
+}
+
+.mat-mdc-cell {
+  padding: 12px 16px;
+  color: #263b3e;
+  border-bottom: 1px solid #EEF4F3;
+  border-right: 1px solid #EEF4F3;
+}
+
+@media (max-width: 640px) {
+  html, body { font-size: 15px; }
+  .mat-mdc-header-cell, .mat-mdc-cell { padding: 10px 12px; }
+  .mat-mdc-card { border-radius: 13px !important; }
+}
+
+.mat-mdc-cell:last-of-type {
+  border-right: none;
+}
+
+.mat-mdc-row:last-of-type .mat-mdc-cell {
+  border-bottom: none;
+}
+
+.mat-mdc-row:nth-child(even) {
+  background: #FBFDFD;
+}
+
+.mat-mdc-row:hover {
+  background: #EEF8F5;
+  transition: background-color 0.12s ease;
+}
+
+// mat-elevation-z1's own box-shadow renders as a detached "ghost" rectangle
+// below the last row once a table also has a border/border-radius (a
+// Chrome table-rendering quirk) — the table's own shadow above replaces it,
+// so drop the redundant one.
+table.mat-elevation-z1 {
+  box-shadow: none !important;
+}

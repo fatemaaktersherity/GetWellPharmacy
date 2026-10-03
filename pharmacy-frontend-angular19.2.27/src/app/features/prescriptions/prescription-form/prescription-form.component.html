@@ -1,0 +1,76 @@
+<div class="page-header">
+    <div>
+        <h1>{{ id ? 'Edit Prescription' : 'New Prescription' }}</h1>
+    </div>
+    <a mat-stroked-button routerLink="/prescriptions"><mat-icon>arrow_back</mat-icon> Back</a>
+</div>
+
+<mat-card><mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+            <section class="header-info">
+                <mat-form-field appearance="outline">
+                    <mat-label>Doctor</mat-label>
+                    <mat-select formControlName="doctorId">
+                        @for (d of doctors; track d.doctorId) { <mat-option [value]="d.doctorId">{{ d.name }} @if
+                            (d.specialization) { <small> — {{ d.specialization }}</small> }</mat-option> }
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <mat-label>Customer</mat-label>
+                    <mat-select formControlName="customerId">
+                        @for (c of customers; track c.customerId) { <mat-option [value]="c.customerId">{{ c.firstName }}
+                            {{ c.lastName }}</mat-option> }
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <mat-label>Prescription Date</mat-label>
+                    <input matInput type="date" formControlName="prescriptionDate">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Diagnosis</mat-label>
+                    <input matInput formControlName="diagnosis">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Notes</mat-label>
+                    <textarea matInput formControlName="notes" rows="2"></textarea>
+                </mat-form-field>
+                <div class="image-picker">
+                    <label>Prescription Image (optional)</label>
+                    <input type="file" accept="image/*" (change)="selectImage($event)">
+                    @if (imagePreview) { <a [href]="imagePreview" target="_blank"><img class="photo-thumb"
+                            [src]="imagePreview" alt="Prescription preview"></a> }
+                </div>
+            </section>
+
+            <section formArrayName="items" class="items">
+                <h3>Medicines <button type="button" mat-icon-button
+                        (click)="addItem()"><mat-icon>add</mat-icon></button></h3>
+                @for (item of items.controls; track $index; let i = $index) {
+                <div [formGroupName]="i" class="line">
+                    <mat-form-field><mat-label>Linked Product (optional)</mat-label>
+                        <mat-select formControlName="productId">
+                            <mat-option [value]="null">— None —</mat-option>
+                            @for (p of products; track p.id) { <mat-option [value]="p.id">{{ p.productName
+                                }}</mat-option> }
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field><mat-label>Medicine Name</mat-label><input matInput
+                            formControlName="medicineName"></mat-form-field>
+                    <mat-form-field><mat-label>Dosage</mat-label><input matInput formControlName="dosage"
+                            placeholder="e.g. 1+0+1"></mat-form-field>
+                    <mat-form-field><mat-label>Duration</mat-label><input matInput formControlName="duration"
+                            placeholder="e.g. 7 days"></mat-form-field>
+                    <mat-form-field><mat-label>Instructions</mat-label><input matInput formControlName="instructions"
+                            placeholder="e.g. After meal"></mat-form-field>
+                    <button type="button" mat-icon-button color="warn"
+                        (click)="removeItem(i)"><mat-icon>delete</mat-icon></button>
+                </div>
+                }
+            </section>
+
+            <div class="form-actions">
+                <button mat-raised-button color="primary" type="submit" [disabled]="saving">Save Prescription</button>
+                <a mat-button routerLink="/prescriptions">Cancel</a>
+            </div>
+        </form>
+    </mat-card-content></mat-card>

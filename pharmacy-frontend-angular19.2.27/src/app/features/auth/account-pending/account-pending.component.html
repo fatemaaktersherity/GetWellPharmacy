@@ -1,0 +1,28 @@
+<div class="info-page">
+    <mat-card class="info-card">
+        <div class="info-icon">
+            <mat-icon>person_off</mat-icon>
+        </div>
+
+        <mat-card-header>
+            <mat-card-title>No role assigned yet</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+            <p>
+                Your account exists and you're signed in, but an Administrator
+                hasn't assigned you a role (Admin, Manager, or Cashier) yet — so there's
+                no dashboard to show you.
+            </p>
+            <p>
+                Ask an Administrator to set your role from
+                <strong>Users &amp; Roles</strong>, then sign out and back in.
+            </p>
+
+            <button mat-raised-button color="primary" (click)="logout()">
+                <mat-icon>logout</mat-icon>
+                Sign Out
+            </button>
+        </mat-card-content>
+    </mat-card>
+</div>

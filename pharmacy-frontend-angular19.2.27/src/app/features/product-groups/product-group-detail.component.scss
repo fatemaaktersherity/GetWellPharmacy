@@ -1,0 +1,5 @@
+@use '../dosage-forms/dosage-form-list.component.scss';
+.strength-row { display: flex; gap: 12px; }
+.strength-value { flex: 1; }
+.strength-unit { width: 110px; }
+.variant-card-header { display: flex; align-items: center; justify-content: space-between; }

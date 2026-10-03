@@ -1,0 +1,137 @@
+<h2 mat-dialog-title class="dialog-title">
+  Confirm sale
+  <button
+    mat-icon-button
+    type="button"
+    class="close-btn"
+    (click)="back()"
+    aria-label="Close"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</h2>
+
+<mat-dialog-content [formGroup]="form">
+  @if (ready()) {
+  <mat-form-field appearance="fill" class="full-width">
+    <mat-label>Payment method</mat-label>
+    <mat-select formControlName="paymentMethod">
+      @for (pm of data.paymentMethods; track pm.id) {
+      <mat-option [value]="pm.name">{{ pm.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  } @else {
+  <div class="field-skeleton"></div>
+  }
+
+  <div class="items-summary">
+    <div class="items-summary-title">Products in this sale</div>
+    @for (item of items; track item.productName + (item.batchNumber || '')) {
+    <div class="item-row">
+      <div class="item-info">
+        <span class="item-name">{{ item.productName }}</span>
+        @if (item.batchNumber) {
+        <span class="item-batch">Batch {{ item.batchNumber }}</span>
+        }
+      </div>
+      <span class="item-qty">{{ item.quantity }} {{ item.unitName }}</span>
+      <span class="item-price"
+        >{{ item.quantity * item.unitPrice | currency: "BDT " }}</span
+      >
+    </div>
+    }
+  </div>
+
+  <div class="status-label">Payment status</div>
+  <div class="status-group">
+    <button
+      type="button"
+      class="status-btn"
+      [class.active]="isPaid"
+      (click)="setStatus(true)"
+    >
+      Paid
+    </button>
+    <button
+      type="button"
+      class="status-btn"
+      [class.active]="!isPaid"
+      (click)="setStatus(false)"
+    >
+      Unpaid / Due
+    </button>
+  </div>
+
+  <div class="field-row">
+    <mat-form-field appearance="fill" class="half-width">
+      <mat-label>Discount</mat-label>
+      <input matInput type="number" min="0" formControlName="discount" />
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="half-width">
+      <mat-label
+        >{{ isPaid ? "Amount received" : "Advance paid now (optional)"
+        }}</mat-label
+      >
+      <input matInput type="number" min="0" formControlName="amountPaid" />
+    </mat-form-field>
+  </div>
+
+  @if (!isPaid) {
+  <mat-form-field appearance="fill" class="full-width">
+    <mat-label>Terms and conditions (e.g. due within 7 days)</mat-label>
+    <textarea matInput rows="2" maxlength="500" formControlName="termsAndConditions"></textarea>
+    <mat-hint align="end">{{ form.controls.termsAndConditions.value.length }}/500</mat-hint>
+  </mat-form-field>
+  }
+
+  <div class="totals">
+    <div class="totals-row">
+      <span>Subtotal</span><span>{{ subtotal | currency: "BDT " }}</span>
+    </div>
+    @if (discount) {
+    <div class="totals-row">
+      <span>Discount</span><span>-{{ discount | currency: "BDT " }}</span>
+    </div>
+    }
+    <div class="totals-row bold">
+      <span>Total due</span><span>{{ totalDue | currency: "BDT " }}</span>
+    </div>
+    <div class="totals-row">
+      <span>{{ isPaid ? "Amount received" : "Advance paid" }}</span
+      ><span>{{ amountPaid | currency: "BDT " }}</span>
+    </div>
+    @if (isPaid) {
+    <div class="totals-row change">
+      <span>Change</span><span>{{ change | currency: "BDT " }}</span>
+    </div>
+    } @else {
+    <div class="totals-row due">
+      <span>Balance due</span><span>{{ balanceDue | currency: "BDT " }}</span>
+    </div>
+    }
+  </div>
+
+  @if (error) {
+  <p class="error">{{ error }}</p>
+  } @else {
+  <p class="note">
+    @if (isPaid) { The sale is saved as fully paid. } @else { The sale is saved
+    as due; any advance is recorded as a partial payment and the balance stays
+    on the customer's account. }
+  </p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" (click)="back()">Back</button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    [disabled]="!!error"
+    (click)="save()"
+  >
+    Save
+  </button>
+</mat-dialog-actions>

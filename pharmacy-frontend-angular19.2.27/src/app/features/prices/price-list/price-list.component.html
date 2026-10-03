@@ -1,0 +1,138 @@
+<div class="page-header">
+  <div>
+    <h1>Price Management</h1>
+    <p>
+      Update unit, purchase, and sale prices without opening the full product
+      form.
+    </p>
+  </div>
+</div>
+
+<mat-card>
+  <mat-card-content>
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search products</mat-label>
+      <input
+        matInput
+        [formControl]="searchControl"
+        placeholder="Search by product name"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <table mat-table [dataSource]="products">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Product</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.productName }} <small>{{ p.strength }}</small>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="unitPrice">
+        <th mat-header-cell *matHeaderCellDef>Unit Price</th>
+        <td mat-cell *matCellDef="let p">
+          @if (editingId === p.id) {
+            <input
+              matInput
+              type="number"
+              min="0"
+              [(ngModel)]="editingProduct.unitPrice"
+              class="inline-input"
+            />
+          } @else {
+            {{ p.unitPrice | currency: "BDT " }}
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="purchasePrice">
+        <th mat-header-cell *matHeaderCellDef>Purchase Price</th>
+        <td mat-cell *matCellDef="let p">
+          @if (editingId === p.id) {
+            <input
+              matInput
+              type="number"
+              min="0"
+              [(ngModel)]="editingProduct.purchasePrice"
+              class="inline-input"
+            />
+          } @else {
+            {{ p.purchasePrice | currency: "BDT " }}
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="salePrice">
+        <th mat-header-cell *matHeaderCellDef>Sale Price</th>
+        <td mat-cell *matCellDef="let p">
+          @if (editingId === p.id) {
+            <input
+              matInput
+              type="number"
+              min="0"
+              [(ngModel)]="editingProduct.salePrice"
+              class="inline-input"
+            />
+          } @else {
+            {{ p.salePrice | currency: "BDT " }}
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let p">
+          @if (editingId === p.id) {
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="savePrice(p.id)"
+              aria-label="Save"
+            >
+              <mat-icon>check</mat-icon>
+            </button>
+            <button mat-icon-button (click)="cancelEdit()" aria-label="Cancel">
+              <mat-icon>close</mat-icon>
+            </button>
+          } @else {
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="startEdit(p)"
+              aria-label="Edit price"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+          }
+        </td>
+      </ng-container>
+
+      <tr
+        mat-header-row
+        *matHeaderRowDef="[
+          'name',
+          'unitPrice',
+          'purchasePrice',
+          'salePrice',
+          'actions',
+        ]"
+      ></tr>
+      <tr
+        mat-row
+        *matRowDef="
+          let row;
+          columns: [
+            'name',
+            'unitPrice',
+            'purchasePrice',
+            'salePrice',
+            'actions',
+          ]
+        "
+      ></tr>
+    </table>
+    @if (!products.length) {
+      <p class="empty">No products found.</p>
+    }
+  </mat-card-content>
+</mat-card>

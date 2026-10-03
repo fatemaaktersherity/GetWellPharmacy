@@ -1,0 +1,9 @@
+.page-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
+.page-header h1 { margin: 0; font-weight: 500; }
+.page-header p { color: #666; margin: 6px 0 0; }
+.content-grid { display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.full-width { width: 100%; }
+.actions { display: flex; justify-content: flex-end; gap: 8px; }
+table { width: 100%; margin-top: 12px; }
+.empty { color: #666; margin: 16px 0 0; }
+@media (max-width: 800px) { .content-grid { grid-template-columns: 1fr; } }
